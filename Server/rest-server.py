@@ -1,9 +1,19 @@
 #!flask/bin/python
+###############################################################################
+#
+# Instructions
+#
+# Run this app wit the command
+# >python rest-server.py
+#
+###############################################################################
+
 from __future__ import print_function # In python 2.7
 import sqlite3
 
 from flask import Flask, jsonify, abort, request, make_response, g
 from flask_cors import CORS, cross_origin
+
 
 app = Flask(__name__, static_url_path="")
 cors = CORS(app, resources={r"*": {"origins": "*"}})
@@ -13,6 +23,7 @@ cors = CORS(app, resources={r"*": {"origins": "*"}})
 # API Calls
 #
 ###############################################################################
+# curl -X DELETE http://localhost:5000/naloxalocate/api/v1.0/users/3
 
 @app.route('/naloxalocate/api/v1.0/users', methods=['GET'])
 def get_users():
@@ -38,6 +49,7 @@ def update_user(user_id):
     if not user:
         abort(404)
     else:
+        # TODO
         pass
 
 @app.route('/naloxalocate/api/v1.0/users/<int:user_id>', methods=['DELETE'])
@@ -69,6 +81,7 @@ def delete_user(user_id):
 # Database
 #
 ###############################################################################
+# http://flask.pocoo.org/docs/0.11/patterns/sqlite3/
 
 # DB Structure
 # Users table
