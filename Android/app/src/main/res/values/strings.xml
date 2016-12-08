@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Naloxalocate</string>
+    <string name="startMsg">Send a message to an emergency contact after 10 mintues in case of overdose</string>
+    <string name="start_btn_msg">Start a Timer</string>
+    <string name="find_msg">Find opioid overdose reversal drug near you</string>
+    <string name="find_btn_msg">Find Naloxone</string>
+    <string name="register_msg">Register as a Naloxone provider</string>
+    <string name="provide_btn_msg">Provide Naloxone</string>
 </resources>
