@@ -4,12 +4,12 @@
 # Instructions
 #
 # Run this app wit the command
-# >python rest-server.py
+# $ python rest-server.py
 #
 ###############################################################################
 
 from __future__ import print_function # In python 2.7
-import sqlite3
+import sqlite3, os
 
 from flask import Flask, jsonify, abort, request, make_response, g
 from flask_cors import CORS, cross_origin
@@ -92,6 +92,9 @@ def delete_user(user_id):
 DATABASE = 'database.sqlite'
 
 def get_db():
+    """Opens a new database connection if there is none yet for the
+    current application context.
+    """
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
@@ -99,6 +102,7 @@ def get_db():
 
 @app.teardown_appcontext
 def close_connection(exception):
+    """Closes the database again at the end of the request."""
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
@@ -115,6 +119,26 @@ def query_db(query, args=(), one=False, dict=False, getLastId=False):
     db.commit()
     cur.close()
     return (rv[0] if rv else None) if one else rv
+
+###############################################################################
+#
+# For Testing
+#
+###############################################################################
+# https://github.com/pallets/flask/blob/master/examples/flaskr/flaskr/flaskr.py
+
+def init_db():
+    """Initializes the database."""
+    db = get_db()
+    with app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().executescript(f.read())
+    db.commit()
+
+@app.cli.command('initdb')
+def initdb_command():
+    """Creates the database tables."""
+    init_db()
+    print('Initialized the database.')
 
 
 if __name__ == '__main__':
