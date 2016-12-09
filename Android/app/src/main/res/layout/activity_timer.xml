@@ -2,11 +2,57 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="1">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:text="@string/select_contact"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TODO" />
+        android:id="@+id/textView8"
+        android:layout_weight="0.1"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+
+    <TextView
+        android:text="@string/emergency_contact_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView2"
+        android:layout_weight="0.14"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+    <TextView
+        android:text="@string/emergency_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView5"
+        android:layout_weight="0.3"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+    <CheckBox
+        android:text="@string/save_emergency_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/checkBox"
+        android:layout_weight="0.1"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+    <TextView
+        android:text="@string/select_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView6"
+        android:layout_weight="0.15"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+    <Button
+        android:text="@string/start_timer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnBeginTimerActivity"
+        android:layout_weight="0.1"
+        android:background="@android:color/holo_blue_light"
+        android:textColor="@android:color/white"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
 
 </LinearLayout>
