@@ -3,7 +3,7 @@
 #
 # Instructions
 #
-# Run this app wit the command
+# Run this app with the command
 # $ python rest-server.py
 #
 ###############################################################################
@@ -16,7 +16,9 @@ from flask_cors import CORS, cross_origin
 
 
 app = Flask(__name__, static_url_path="")
+app.config['DEBUG'] = True
 cors = CORS(app, resources={r"*": {"origins": "*"}})
+
 
 ###############################################################################
 #
@@ -25,12 +27,16 @@ cors = CORS(app, resources={r"*": {"origins": "*"}})
 ###############################################################################
 # curl -X DELETE http://localhost:5000/naloxalocate/api/v1.0/users/3
 
-@app.route('/naloxalocate/api/v1.0/users', methods=['GET'])
+@app.route('/')
+def hello_world():
+  return 'Hello from Flask!'
+
+@app.route('/api/v1.0/users', methods=['GET'])
 def get_users():
     # Select users from db and return as json
     return jsonify(users=query_db('SELECT * FROM users'))
 
-@app.route('/naloxalocate/api/v1.0/users/<int:user_id>', methods=['GET'])
+@app.route('/api/v1.0/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = query_db('SELECT * FROM users WHERE id=?', [user_id])
     if not user:
@@ -38,12 +44,12 @@ def get_user(user_id):
     else:
         return jsonify(user=user)
 
-@app.route('/naloxalocate/api/v1.0/users', methods=['POST'])
+@app.route('/api/v1.0/users', methods=['POST'])
 def create_user():
     lastid = query_db('INSERT INTO users DEFAULT VALUES', getLastId=True)
     return jsonify(user_id=lastid)
 
-@app.route('/naloxalocate/api/v1.0/users/<int:user_id>', methods=['PUT'])
+@app.route('/api/v1.0/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     user = query_db('SELECT * FROM users WHERE id=?', [user_id])
     if not user:
@@ -52,7 +58,7 @@ def update_user(user_id):
         # TODO
         pass
 
-@app.route('/naloxalocate/api/v1.0/users/<int:user_id>', methods=['DELETE'])
+@app.route('/api/v1.0/users/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     user = query_db('SELECT * FROM users WHERE id=?', [user_id])
     if not user:
@@ -89,7 +95,8 @@ def not_found(error):
 #   location
 #   update time
 
-DATABASE = 'database.sqlite'
+DATABASE = os.path.join(app.root_path, 'database.sqlite')
+print(DATABASE)
 
 def get_db():
     """Opens a new database connection if there is none yet for the
