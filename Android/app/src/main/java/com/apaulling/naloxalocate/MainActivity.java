@@ -60,15 +60,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getNewDeviceId() {
-        String url = "https://jsonplaceholder.typicode.com/posts/1";
+        String url = "http://apaulling.com/naloxalocate/api/v1.0/users";
 
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            int user_id = response.getInt("id");
+                            int user_id = response.getInt("user_id");
                             Toast.makeText(MainActivity.this, "Response: " + Integer.toString(user_id), Toast.LENGTH_SHORT).show();
 
                             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());

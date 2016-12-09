@@ -22,7 +22,7 @@ public class TimerActivity extends AppCompatActivity {
 
     private static final String FORMAT = "%02d:%02d:%02d";
 
-
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
