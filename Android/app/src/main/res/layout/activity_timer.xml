@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:weightSum="1">
 
-    <EditText
+    <TextView
         android:text="@string/select_contact"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,7 +14,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
 
-    <EditText
+    <TextView
         android:text="@string/emergency_contact_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,7 +22,7 @@
         android:layout_weight="0.14"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-    <EditText
+    <TextView
         android:text="@string/emergency_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
