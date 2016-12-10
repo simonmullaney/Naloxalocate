@@ -21,6 +21,10 @@ public class TimerBeginActivity extends AppCompatActivity {
     private static final String FORMAT = "%02d:%02d:%02d";
 
 
+    TextView Contact_number = (TextView)findViewById(R.id.Contact_number);
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

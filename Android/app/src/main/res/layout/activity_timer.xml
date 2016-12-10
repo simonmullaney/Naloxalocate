@@ -5,16 +5,16 @@
     android:orientation="vertical"
     android:weightSum="1">
 
-    <TextView
+    <EditText
         android:text="@string/select_contact"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/textView8"
+        android:id="@+id/Contact_number"
         android:layout_weight="0.1"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
 
-    <TextView
+    <EditText
         android:text="@string/emergency_contact_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,7 +22,7 @@
         android:layout_weight="0.14"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-    <TextView
+    <EditText
         android:text="@string/emergency_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -6,7 +6,7 @@
     <string name="find_btn_msg">Find Naloxone</string>
     <string name="register_msg">Register as a Naloxone provider</string>
     <string name="provide_btn_msg">Provide Naloxone</string>
-    <string name="select_contact">Contact</string>
+    <string name="select_contact">Contact number</string>
     <string name="emergency_contact_name">Emergency contact name</string>
     <string name="emergency_message">Emergency message</string>
     <string name="save_emergency_details">Save for next time</string>
