@@ -9,7 +9,7 @@
         android:hint="@string/select_contact"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/Contact_number"
+        android:id="@+id/Contact_number_id"
         android:layout_weight="0.1"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
@@ -26,7 +26,7 @@
         android:hint="@string/emergency_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/emergency_message"
+        android:id="@+id/emergency_message_id"
         android:layout_weight="0.25"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
