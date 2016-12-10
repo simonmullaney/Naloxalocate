@@ -30,6 +30,10 @@
             android:name=".ProvideActivity"
             android:label="Manage Account"
             android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".TimerBeginActivity"
+            android:label="Begin timer"
+            android:parentActivityName=".TimerActivity" />
     </application>
 
 </manifest>

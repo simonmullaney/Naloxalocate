@@ -14,4 +14,6 @@
     <string name="select_time">Select time</string>
     <string name="Remaining_time">Remaining time: </string>
     <string name="Remaining_time_val">Remaining time value: </string>
+    <string name="StopAlarm">Stop Alarm: </string>
+
 </resources>
