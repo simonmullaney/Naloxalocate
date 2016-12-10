@@ -2,8 +2,10 @@ package com.apaulling.naloxalocate;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +20,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
+
+    /*
+    * Permission Location Callback
+    */
+    private static final int PERMISSION_LOCATION_REQUEST_CODE = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +45,20 @@ public class MainActivity extends AppCompatActivity {
         btnFindActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.this.startActivity(new Intent(MainActivity.this, FindActivity.class));
+                // Check for location permissions
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                    ActivityCompat.requestPermissions(
+                            MainActivity.this,
+                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                            PERMISSION_LOCATION_REQUEST_CODE);
+                    return;
+                }
+                // Location permission already granted, start activity
+                else {
+                    MainActivity.this.startActivity(new Intent(MainActivity.this, FindActivity.class));
+                }
             }
         });
 
@@ -57,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+
     }
 
     private void getNewDeviceId() {
@@ -93,6 +115,30 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         // Access the RequestQueue through singleton class.
-        MySingleton.getInstance(this).addToRequestQueue(jsObjRequest);
+        RequestSingleton.getInstance(this).addToRequestQueue(jsObjRequest);
     }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_LOCATION_REQUEST_CODE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // Permission was granted, yay! Start the activity
+                    MainActivity.this.startActivity(new Intent(MainActivity.this, FindActivity.class));
+
+                } else {
+
+                    // Permission denied, boo!
+//                    Toast.makeText(this, "Cannot start without LOC Perms..", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+        }
+    }
+
 }

@@ -1,7 +1,6 @@
 package com.apaulling.naloxalocate;
 
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -12,9 +11,8 @@ import android.telephony.SmsManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
 import java.util.concurrent.TimeUnit;
-import android.app.Activity;
-import android.widget.Toast;
 
 
 
@@ -34,7 +32,7 @@ public class TimerBeginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_timer_begin);
+        setContentView(R.layout.activity_timer_begin);
 
         final TextView number;
         final TextView message;
