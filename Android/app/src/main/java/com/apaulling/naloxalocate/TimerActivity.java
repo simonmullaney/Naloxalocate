@@ -13,7 +13,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static com.apaulling.naloxalocate.R.id.checkBox;
+
 
 /**
  * Created by psdco on 08/12/2016.
@@ -40,15 +40,16 @@ public class TimerActivity extends AppCompatActivity {
         });
 
 
-        EditText Contact_number = (EditText) findViewById(R.id.Contact_number);
+        EditText Timer_setup_text = (EditText) findViewById(R.id.Contact_number_id);
 
-        Contact_number.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+        Timer_setup_text.setOnEditorActionListener(new TextView.OnEditorActionListener(){
             @Override
             public boolean onEditorAction (TextView textview,int i, KeyEvent keyEvent){
                 boolean handled = false;
                 if (i == EditorInfo.IME_ACTION_NEXT) {
                     String inputText = textview.getText().toString();
                     Toast.makeText(TimerActivity.this, "" + inputText, Toast.LENGTH_SHORT).show();
+
 
                 }
                 return handled;
