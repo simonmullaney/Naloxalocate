@@ -27,24 +27,23 @@ import android.widget.Toast;
 public class TimerActivity extends AppCompatActivity implements View.OnClickListener {
 
 
-    //private String username,password;
     private String contact_number, emergency_message, contact_name;
-    //private Button ok;
     private Button ch;
-    //private EditText editTextUsername,editTextPassword;
-    private EditText editTextContactNumber, editTextConatctName, editTextMessage;
-
+    private EditText editTextContactNumber, editTextConatctName, editTextMessage,editTextTime;
     private CheckBox saveLoginCheckBox;
     private SharedPreferences loginPreferences;
     private SharedPreferences.Editor loginPrefsEditor;
     private Boolean saveLogin;
+    private static Integer time_int;
+    private static String message;
+    static String number_str;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
-
-
 
 
         // Code to implement save checkbox
@@ -53,9 +52,24 @@ public class TimerActivity extends AppCompatActivity implements View.OnClickList
         ch.setOnClickListener(this);
 
         editTextContactNumber = (EditText) findViewById(R.id.Contact_number_id);
-        editTextConatctName = (EditText) findViewById(R.id.emergency_contact_name_id);
+        //number_str = editTextContactNumber.getText().toString();
+        setNumber(number_str);
+
         editTextMessage = (EditText) findViewById(R.id.emergency_message_id);
+        //message = editTextMessage.getText().toString();
+        setMessage(message);
+
+
+        editTextTime = (EditText) findViewById(R.id.emergency_message_id);
+        //time_int = Integer.parseInt(editTextTime.getText().toString());
+        setTime_int(time_int);
+
+
+        editTextConatctName = (EditText) findViewById(R.id.emergency_contact_name_id);
+
         saveLoginCheckBox = (CheckBox) findViewById(R.id.checkBox_id);
+
+
 
         loginPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
         loginPrefsEditor = loginPreferences.edit();
@@ -102,33 +116,34 @@ public class TimerActivity extends AppCompatActivity implements View.OnClickList
             }
         });
     }
+
+    public static void setTime_int(Integer time_int) {
+
+        TimerActivity.time_int = time_int;
+    }
+
+    public static void setNumber(String number_str) {
+        TimerActivity.number_str = number_str;
+    }
+
+    public static void setMessage(String message) {
+        TimerActivity.message = message;
+    }
+
+    public static Integer getTime_int() {
+        return time_int;
+    }
+
+    public static String getNumber() {
+        return number_str;
+    }
+
+    public static String getMessage() {
+        return message;
+    }
 }
 
 
-
-
-
-
-/*
-        //code to save inserted details
-        final CheckBox ch = (CheckBox) findViewById(R.id.checkBox);
-
-        ch.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-
-                if(ch.isChecked()){
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                    SharedPreferences settings = getSharedPreferences(String.valueOf(prefs), 0);
-                    settings.edit().putBoolean("check",true).commit();
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "Uncheck", Toast.LENGTH_SHORT).show();
-                }}
-        });
-*/
 
 
 
