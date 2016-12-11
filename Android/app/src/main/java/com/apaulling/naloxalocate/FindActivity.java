@@ -79,6 +79,7 @@ public class FindActivity extends AppCompatActivity implements
 
         // Kick off the process of building a GoogleApiClient and requesting the LocationServices API.
         buildGoogleApiClient();
+        createLocationRequest();
     }
 
     /**
@@ -115,8 +116,6 @@ public class FindActivity extends AppCompatActivity implements
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-
-        createLocationRequest();
     }
 
     /**
@@ -231,8 +230,9 @@ public class FindActivity extends AppCompatActivity implements
         // Within {@code onPause()}, we pause location updates, but leave the
         // connection to GoogleApiClient intact.  Here, we resume receiving
         // location updates if the user has requested them.
-
-        this.onConnected(null);
+        if (mGoogleApiClient.isConnected()) {
+            this.onConnected(null);
+        }
     }
 
     @Override

@@ -25,6 +25,7 @@ public class ProvideActivity extends AppCompatActivity {
     private boolean locationServiceAlarmSet;
     private TextView deviceIdTextView;
     final int LOCATION_SERVICE_REQ_CODE = 1001;
+    Intent LocSerRecIntent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,7 +34,11 @@ public class ProvideActivity extends AppCompatActivity {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         int user_id = prefs.getInt("user_id", -1);
-        locationServiceAlarmSet = prefs.getBoolean("locationServiceAlarmSet", false);
+//        locationServiceAlarmSet = prefs.getBoolean("locationServiceAlarmSet", false);
+
+        // Register alarm if not registered already
+        LocSerRecIntent = new Intent(ProvideActivity.this, LocationServiceReceiver.class);
+        locationServiceAlarmSet = (PendingIntent.getBroadcast(ProvideActivity.this, LOCATION_SERVICE_REQ_CODE, LocSerRecIntent, PendingIntent.FLAG_NO_CREATE) != null);
 
         final Button btnToggleGPS = (Button) findViewById(R.id.btnToggleGPS);
         if (locationServiceAlarmSet){
@@ -52,9 +57,8 @@ public class ProvideActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 // Register alarm if not registered already
-                Intent intent = new Intent(ProvideActivity.this, LocationServiceReceiver.class);
                 AlarmManager alarmManager =(AlarmManager) ProvideActivity.this.getSystemService(Context.ALARM_SERVICE);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(ProvideActivity.this, LOCATION_SERVICE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(ProvideActivity.this, LOCATION_SERVICE_REQ_CODE, LocSerRecIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                 if (!locationServiceAlarmSet){
                     // No alarm, create it
@@ -72,13 +76,7 @@ public class ProvideActivity extends AppCompatActivity {
                     btnToggleGPS.setText("Turn On GPS Tracking");
                 }
 
-//                locationServiceAlarmSet = (PendingIntent.getBroadcast(ProvideActivity.this, LOCATION_SERVICE_REQ_CODE, intent, PendingIntent.FLAG_NO_CREATE) != null);
                 locationServiceAlarmSet = !locationServiceAlarmSet;
-
-                SharedPreferences innerPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                SharedPreferences.Editor editor = innerPrefs.edit();
-                editor.putBoolean("locationServiceAlarmSet", locationServiceAlarmSet);
-                editor.apply();
             }
         });
 
