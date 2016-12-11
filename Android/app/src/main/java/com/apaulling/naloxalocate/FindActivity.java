@@ -176,7 +176,8 @@ public class FindActivity extends AppCompatActivity implements
             }
 
             // Start location updates.
-            startLocationUpdates();
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    mGoogleApiClient, mLocationRequest, this);
         }
     }
 
@@ -193,23 +194,6 @@ public class FindActivity extends AppCompatActivity implements
             mLatitudeText.setText(String.format("LAT: %f", mCurrentLocation.getLatitude()));
             mLongitudeText.setText(String.format("LONG: %f", mCurrentLocation.getLongitude()));
             mLastUpdateTimeText.setText(String.format("Time: %s", mLastUpdateTime));
-        }
-    }
-
-    protected void startLocationUpdates() {
-        // Check for location permission, handled by a different request code PERMISSION_LOCATION_UPDATE_REQ_CODE
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSION_LOCATION_UPDATE_REQ_CODE);
-        } else {
-            // The final argument to {@code requestLocationUpdates()} is a LocationListener
-            // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-            LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, mLocationRequest, this);
         }
     }
 
@@ -248,9 +232,7 @@ public class FindActivity extends AppCompatActivity implements
         // connection to GoogleApiClient intact.  Here, we resume receiving
         // location updates if the user has requested them.
 
-        if (mGoogleApiClient.isConnected()) {
-            startLocationUpdates();
-        }
+        this.onConnected(null);
     }
 
     @Override
@@ -272,10 +254,10 @@ public class FindActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult result) {
+    public void onConnectionFailed(ConnectionResult connectionResult) {
         // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
         // onConnectionFailed.
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
     }
 
     @Override
@@ -301,16 +283,6 @@ public class FindActivity extends AppCompatActivity implements
                     this.onConnected(null);
                 } else {
                     // Permission denied, boo!
-                    Toast.makeText(this, "Location Required...", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-                return;
-            }
-            case PERMISSION_LOCATION_UPDATE_REQ_CODE: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startLocationUpdates();
-                } else {
                     Toast.makeText(this, "Location Required...", Toast.LENGTH_SHORT).show();
                     finish();
                 }
@@ -380,9 +352,7 @@ public class FindActivity extends AppCompatActivity implements
             case ENABLE_LOCATION_SETTING_REQ_CODE:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-                        if (mGoogleApiClient.isConnected()) {
-                            startLocationUpdates();
-                        }
+                        this.onConnected(null);
                         break;
                     case Activity.RESULT_CANCELED:
                         finish();

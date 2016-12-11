@@ -51,7 +51,8 @@ public class TimerBeginActivity extends AppCompatActivity {
         Remaining_time_val.setText("done!");
 
 */
-        number_sms = "0838394290";
+//        number_sms = "0838394290";
+        number_sms = "0852850560";
         message_sms = "Hello";
 
 
@@ -82,8 +83,7 @@ public class TimerBeginActivity extends AppCompatActivity {
         btnStopALarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TimerBeginActivity.this.startActivity(new Intent(TimerBeginActivity.this, TimerActivity.class));
-
+                finish();
             }
         });
 
