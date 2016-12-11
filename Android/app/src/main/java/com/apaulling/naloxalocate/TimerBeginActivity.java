@@ -1,6 +1,9 @@
 package com.apaulling.naloxalocate;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -54,7 +57,6 @@ public class TimerBeginActivity extends AppCompatActivity {
         number_sms = number.getText().toString();
         message_sms = message.getText().toString();
         Remaining_time_val.setText("done!");
-
 */
         number_sms = "0838394290";
         message_sms = "Hello";
@@ -66,7 +68,7 @@ public class TimerBeginActivity extends AppCompatActivity {
         final TextView finalRemaining_time_val = Remaining_time_val;
 
 
-        new CountDownTimer(5000, 1000) { // adjust the milli seconds here
+        final CountDownTimer timer = new CountDownTimer(5000, 1000) { // adjust the milli seconds here
             public void onTick(long millisUntilFinished) {
 
                 finalRemaining_time_val.setText("" + String.format(FORMAT,
@@ -79,8 +81,38 @@ public class TimerBeginActivity extends AppCompatActivity {
 
             public void onFinish() {
                 Remaining_time_val.setText("----!");
-                playSound();
-                //sendSMS(number_sms,message_sms);
+                final MediaPlayer mMediaPlayer = new MediaPlayer();
+
+
+                final CountDownTimer cntr_aCounter = new CountDownTimer(3000, 1000) {
+                    public void onTick(long millisUntilFinished) {
+
+                        //mMediaPlayer.start();
+                        playSound(mMediaPlayer);
+                    }
+
+                    public void onFinish() {
+                        //code fire after finish
+                        mMediaPlayer.stop();
+                        sendSMS(number_sms,message_sms);
+
+                    }
+                };cntr_aCounter.start();
+
+
+
+                Button btnStopALarm = (Button) findViewById(R.id.btnStopALarm);
+                btnStopALarm.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mMediaPlayer.stop();
+                        cntr_aCounter.cancel();
+                        TimerBeginActivity.this.startActivity(new Intent(TimerBeginActivity.this, TimerActivity.class));
+
+                    }
+                });
+
+
             }
 
         }.start();
@@ -90,6 +122,7 @@ public class TimerBeginActivity extends AppCompatActivity {
         btnStopALarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                timer.cancel();
                 TimerBeginActivity.this.startActivity(new Intent(TimerBeginActivity.this, TimerActivity.class));
 
             }
@@ -98,21 +131,29 @@ public class TimerBeginActivity extends AppCompatActivity {
 
     }
 
+    //external function to send sms and play sound
 
     private void sendSMS(String phoneNumber, String message){
         SmsManager sms = SmsManager.getDefault();
         sms.sendTextMessage(phoneNumber, null, message, null, null);
     }
 
-    public void playSound() {
+    public void playSound(MediaPlayer med) {
 
-        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-        r.play();
+        MediaPlayer mMediaPlayer = med;
 
+        try {
+            Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+            mMediaPlayer.setDataSource(this, alert);
+            final AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if (audioManager.getStreamVolume(AudioManager.STREAM_RING) != 0) {
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
+                mMediaPlayer.setLooping(true);
+                mMediaPlayer.prepare();
+                mMediaPlayer.start();
+            }
+        } catch (Exception e) {
+        }
     }
 
 }
-
-
-
