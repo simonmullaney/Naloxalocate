@@ -8,13 +8,17 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.concurrent.TimeUnit;
 
-
+import static com.apaulling.naloxalocate.R.id.select_time;
 
 
 /**
@@ -45,20 +49,23 @@ public class TimerBeginActivity extends AppCompatActivity {
 
         number = (TextView) findViewById(R.id.Contact_number_id);
         message = (TextView) findViewById(R.id.emergency_message_id);
+        TextView inputText = (TextView) findViewById(R.id.select_time);
 /*
         number_sms = number.getText().toString();
         message_sms = message.getText().toString();
         Remaining_time_val.setText("done!");
 
 */
-//        number_sms = "0838394290";
-        number_sms = "0852850560";
+        number_sms = "0838394290";
         message_sms = "Hello";
 
+        //String input_Text_str = inputText.getText().toString();
 
-
+        //int input_Text_int = Integer.parseInt(input_Text_str);
 
         final TextView finalRemaining_time_val = Remaining_time_val;
+
+
         new CountDownTimer(5000, 1000) { // adjust the milli seconds here
             public void onTick(long millisUntilFinished) {
 
@@ -71,9 +78,9 @@ public class TimerBeginActivity extends AppCompatActivity {
             }
 
             public void onFinish() {
-                Remaining_time_val.setText("done!");
+                Remaining_time_val.setText("----!");
                 playSound();
-                sendSMS(number_sms,message_sms);
+                //sendSMS(number_sms,message_sms);
             }
 
         }.start();
@@ -83,7 +90,8 @@ public class TimerBeginActivity extends AppCompatActivity {
         btnStopALarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                TimerBeginActivity.this.startActivity(new Intent(TimerBeginActivity.this, TimerActivity.class));
+
             }
         });
 

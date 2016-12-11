@@ -18,7 +18,7 @@
         android:hint="@string/emergency_contact_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/emergency_contact_name_text"
+        android:id="@+id/emergency_contact_name_id"
         android:layout_weight="0.14"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
@@ -34,11 +34,12 @@
         android:text="@string/save_emergency_details"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/checkBox"
+        android:id="@+id/checkBox_id"
         android:layout_weight="0.1"
         android:textAppearance="?android:attr/textAppearanceMedium"/>
     <EditText
         android:hint="@string/select_time"
+        android:inputType="numberDecimal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/select_time"
