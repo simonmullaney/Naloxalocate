@@ -123,8 +123,7 @@ public class TimerBeginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 timer.cancel();
-                TimerBeginActivity.this.startActivity(new Intent(TimerBeginActivity.this, TimerActivity.class));
-
+                finish();
             }
         });
 
@@ -146,8 +145,8 @@ public class TimerBeginActivity extends AppCompatActivity {
             Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             mMediaPlayer.setDataSource(this, alert);
             final AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            if (audioManager.getStreamVolume(AudioManager.STREAM_RING) != 0) {
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
+            if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 mMediaPlayer.setLooping(true);
                 mMediaPlayer.prepare();
                 mMediaPlayer.start();

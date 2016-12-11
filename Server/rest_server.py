@@ -11,6 +11,7 @@
 from __future__ import print_function # In python 2.7
 import sqlite3, os, time
 from math import radians, cos, sin, asin, sqrt # for haversine function
+from operator import itemgetter # sorting
 
 from flask import Flask, jsonify, abort, request, make_response, g
 from flask_cors import CORS, cross_origin
@@ -23,10 +24,9 @@ cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 ###############################################################################
 #
-# API Calls
+# Helper things
 #
 ###############################################################################
-# curl -X DELETE http://localhost:5000/naloxalocate/api/v1.0/users/3
 
 putParser = reqparse.RequestParser()
 putParser.add_argument('latitude', type=float, required=True)
@@ -45,6 +45,11 @@ def get_user_if_exists(user_id):
     else:
         return user
 
+###############################################################################
+#
+# API Calls
+#
+###############################################################################
 
 @app.route('/')
 def hello_world():
@@ -53,6 +58,7 @@ def hello_world():
 @app.route('/api/v1.0/users', methods=['GET'])
 def get_users():
     # if no json in request, Select all users from db and return as json
+    print(request.json)
     if not request.json:
         return jsonify(users=query_db('SELECT * FROM users'))
     else:
@@ -76,6 +82,8 @@ def get_users():
             # if dist < threshold:
             usersNearby.append([user['id'], dist])
 
+        # Sort by ascending distance
+        usersNearby = sorted(usersNearby, key=itemgetter(1))
         return jsonify(users=usersNearby)
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['GET'])
