@@ -107,7 +107,7 @@ public class TimerBeginActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         mMediaPlayer.stop();
                         cntr_aCounter.cancel();
-                        TimerBeginActivity.this.startActivity(new Intent(TimerBeginActivity.this, TimerActivity.class));
+                        finish();
 
                     }
                 });
