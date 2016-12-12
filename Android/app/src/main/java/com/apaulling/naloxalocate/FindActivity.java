@@ -487,7 +487,7 @@ public class FindActivity extends AppCompatActivity implements
                 .setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                dialog.dismiss();
+                                finish();
                             }
                         }
                 );

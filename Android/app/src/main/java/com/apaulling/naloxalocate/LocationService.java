@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.android.volley.NetworkError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -48,13 +49,11 @@ import java.util.HashMap;
 public class LocationService extends IntentService implements ConnectionCallbacks,
         OnConnectionFailedListener, LocationListener {
 
-    private static String TAG = "LocationService";
-
     // The desired interval for location updates. Inexact. Updates may be more or less frequent.
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     // The fastest rate for active location updates. Exact. Updates will never be more frequent than this value
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-
+    private static String TAG = "LocationService";
     // Provides the entry point to Google Play services.
     protected GoogleApiClient mGoogleApiClient;
     // Stores parameters for requests to the FusedLocationProviderApi.
@@ -125,17 +124,18 @@ public class LocationService extends IntentService implements ConnectionCallback
         });
     }
 
-    void finishService(){
+    void finishService() {
         LocationServiceReceiver.completeWakefulIntent(mIntent);
     }
 
-    private void createWarningNotification(String title, String content){
+    private void createWarningNotification(String title, String content) {
         int NOTIFICATION_ID = 12345;
 
         // Add notification contents
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.cast_ic_notification_connecting)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
+                        .setSmallIcon(R.drawable.ic_stat_app_icon_status_bar)
                         .setContentTitle(title)
                         .setContentText(content);
 
@@ -155,8 +155,7 @@ public class LocationService extends IntentService implements ConnectionCallback
             Log.i(TAG, "No have permissions!");
             createWarningNotification("Missing Permission", "Tap to fix");
             finishService();
-        }
-        else {
+        } else {
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             // Check if previous location is available
             if (mCurrentLocation != null) {
@@ -191,7 +190,7 @@ public class LocationService extends IntentService implements ConnectionCallback
         uploadLocation();
     }
 
-    private void uploadLocation(){
+    private void uploadLocation() {
         // Get id to identify this device
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         int user_id = prefs.getInt("user_id", -1);
@@ -204,7 +203,7 @@ public class LocationService extends IntentService implements ConnectionCallback
         params.put("latitude", Double.toString(mCurrentLocation.getLatitude()));
         params.put("longitude", Double.toString(mCurrentLocation.getLongitude()));
         params.put("accuracy", Double.toString(mCurrentLocation.getAccuracy()));
-        params.put("last_updated", Double.toString(System.currentTimeMillis() / 1000L));
+        params.put("last_updated", Integer.toString((int) (System.currentTimeMillis() / 1000L)));
 
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
                 (Request.Method.PUT, url, new JSONObject(params), new Response.Listener<JSONObject>() {
@@ -217,8 +216,13 @@ public class LocationService extends IntentService implements ConnectionCallback
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        createWarningNotification("Network Error", error.toString());
-                        finishService();
+                        if (error instanceof NetworkError) {
+                            createWarningNotification("Network Error", "Please enable internet access");
+                            finishService();
+                        } else {
+                            VolleyError btrError = new VolleyError(new String(error.networkResponse.data));
+                            createWarningNotification("Network Error", btrError.toString());
+                        }
                     }
                 });
 
