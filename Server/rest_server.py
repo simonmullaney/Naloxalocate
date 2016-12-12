@@ -9,11 +9,13 @@
 ###############################################################################
 
 from __future__ import print_function # In python 2.7
-import sqlite3, os
+import sqlite3, os, time
+from math import radians, cos, sin, asin, sqrt # for haversine function
+from operator import itemgetter # sorting
 
 from flask import Flask, jsonify, abort, request, make_response, g
 from flask_cors import CORS, cross_origin
-
+from flask_restful import reqparse
 
 app = Flask(__name__, static_url_path="")
 app.config['DEBUG'] = True
@@ -22,10 +24,32 @@ cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 ###############################################################################
 #
+# Helper things
+#
+###############################################################################
+
+putParser = reqparse.RequestParser()
+putParser.add_argument('latitude', type=float, required=True)
+putParser.add_argument('longitude', type=float, required=True)
+putParser.add_argument('accuracy', type=float, required=True)
+putParser.add_argument('last_updated', type=int, required=True)
+
+getParser = reqparse.RequestParser()
+getParser.add_argument('latitude', type=float, required=True)
+getParser.add_argument('longitude', type=float, required=True)
+
+def get_user_if_exists(user_id):
+    user = query_db('SELECT * FROM users WHERE id=?', [user_id])
+    if not user:
+        abort(404, message="User {} doesn't exist".format(user_id))
+    else:
+        return user
+
+###############################################################################
+#
 # API Calls
 #
 ###############################################################################
-# curl -X DELETE http://localhost:5000/naloxalocate/api/v1.0/users/3
 
 @app.route('/')
 def hello_world():
@@ -33,39 +57,62 @@ def hello_world():
 
 @app.route('/api/v1.0/users', methods=['GET'])
 def get_users():
-    # Select users from db and return as json
-    return jsonify(users=query_db('SELECT * FROM users'))
+    # if no json in request, Select all users from db and return as json
+    if len(request.values) > 0 or request.json:
+        # Get the args from the request
+        args = getParser.parse_args()
+        thisLat = args['latitude']
+        thisLong = args['longitude']
+
+        # Get the users that have updated their location in the last hour
+        # hourAgo = time.time() - 3600
+        # users = query_db('SELECT * FROM users WHERE last_updated>=?', [hourAgo], dict=True)
+
+        # Get any users at all, for debugging...
+        users = query_db('SELECT * FROM users WHERE last_updated>=0', dict=True)
+
+        # Get users nearby
+        usersNearby = []
+        threshold = 50 # radius in km
+        for user in users:
+            dist = haversine(thisLat, thisLong, user['latitude'], user['longitude'])
+            # if dist < threshold:
+            usersNearby.append([user['id'], dist])
+
+        # Sort by ascending distance
+        usersNearby = sorted(usersNearby, key=itemgetter(1))
+        return jsonify(users=usersNearby)
+    else:
+        return jsonify(users=query_db('SELECT * FROM users'))
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
-    user = query_db('SELECT * FROM users WHERE id=?', [user_id])
-    if not user:
-        abort(404)
-    else:
-        return jsonify(user=user)
+    user = get_user_if_exists(user_id)
+    return jsonify(user=user)
 
 @app.route('/api/v1.0/users', methods=['POST'])
 def create_user():
     lastid = query_db('INSERT INTO users DEFAULT VALUES', getLastId=True)
-    return jsonify(user_id=lastid)
+    return jsonify(user_id=lastid), 201  # CREATED
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
-    user = query_db('SELECT * FROM users WHERE id=?', [user_id])
-    if not user:
-        abort(404)
-    else:
-        # TODO
-        pass
+    user = get_user_if_exists(user_id)
+    # Validate request data
+    args = putParser.parse_args()
+    # Update user
+    query_db('UPDATE users SET latitude=?, longitude=?, accuracy=?, last_updated=? WHERE id=?',
+             [args['latitude'], args['longitude'], args['accuracy'], args['last_updated'], user_id])
+    # Get updated user
+    user = get_user_if_exists(user_id)
+    return jsonify(user=user), 201  # CREATED
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    user = query_db('SELECT * FROM users WHERE id=?', [user_id])
-    if not user:
-        abort(404)
-    else:
-        query_db('DELETE FROM users WHERE id=?', [user_id])
-        return jsonify(result=True)
+    user = get_user_if_exists(user_id)
+
+    query_db('DELETE FROM users WHERE id=?', [user_id])
+    return '', 204 # Indicates success but nothing is in the response body, often used for DELETE and PUT operations
 
 
 ###############################################################################
@@ -96,7 +143,6 @@ def not_found(error):
 #   update time
 
 DATABASE = os.path.join(app.root_path, 'database.sqlite')
-print(DATABASE)
 
 def get_db():
     """Opens a new database connection if there is none yet for the
@@ -146,6 +192,27 @@ def initdb_command():
     """Creates the database tables."""
     init_db()
     print('Initialized the database.')
+
+###############################################################################
+#
+# Misc
+#
+###############################################################################
+
+def haversine(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    km = 6367 * c
+    return km
 
 
 if __name__ == '__main__':

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,18 +13,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
 
 import java.util.concurrent.TimeUnit;
-
-import static com.apaulling.naloxalocate.R.id.select_time;
 
 
 /**
@@ -50,7 +44,6 @@ public class TimerBeginActivity extends AppCompatActivity {
         final String number_sms;
         final String message_sms;
         final TextView Remaining_time_val;
-
 
         Remaining_time_val = (TextView) findViewById(R.id.remaining_time_id);
 
@@ -186,8 +179,8 @@ public class TimerBeginActivity extends AppCompatActivity {
             Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             mMediaPlayer.setDataSource(this, alert);
             final AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            if (audioManager.getStreamVolume(AudioManager.STREAM_RING) != 0) {
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_RING);
+            if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 mMediaPlayer.setLooping(true);
                 mMediaPlayer.prepare();
                 mMediaPlayer.start();

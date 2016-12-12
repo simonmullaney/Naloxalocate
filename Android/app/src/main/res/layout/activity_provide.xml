@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin">
 
     <LinearLayout
+        android:id="@+id/device_id_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -12,23 +16,101 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Device ID: " />
+            android:text="Device ID: "
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
         <TextView
-            android:id="@+id/deviceId"
+            android:id="@+id/device_id"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
     </LinearLayout>
 
     <TextView
+        android:id="@+id/device_id_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="GPS Status:" />
+        android:layout_below="@+id/device_id_header"
+        android:paddingTop="4dp"
+        android:text="This ID is assigned by the server on first run to uniquely identify the device."
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+
+    <!--GPS Status-->
+    <LinearLayout
+        android:id="@+id/gps_status_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/device_id_info"
+        android:orientation="horizontal"
+        android:paddingTop="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GPS Status: "
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+        <TextView
+            android:id="@+id/gps_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="..."
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/gps_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/gps_status_header"
+        android:paddingTop="4dp"
+        android:text="When turned on, your location will be periodically sent to the server so you are visible to Naloxone seekers."
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
     <Button
         android:id="@+id/btnToggleGPS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/gps_info"
+        android:paddingTop="8dp"
         android:text="Turn On GPS Tracking" />
 
-</LinearLayout>
+    <!--Delete Account-->
+    <LinearLayout
+        android:id="@+id/delete_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnToggleGPS"
+        android:orientation="horizontal"
+        android:paddingTop="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete Account"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/delete_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/delete_header"
+        android:paddingTop="4dp"
+        android:text="Pressing thing will remove your account for the server. This connot be undone."
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    <Button
+        android:id="@+id/btnDeleteAccount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/delete_info"
+        android:paddingTop="8dp"
+        android:text="Delete Account" />
+
+
+
+</RelativeLayout>
