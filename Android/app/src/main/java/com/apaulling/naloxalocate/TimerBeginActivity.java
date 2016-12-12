@@ -2,6 +2,7 @@ package com.apaulling.naloxalocate;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
@@ -9,6 +10,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
 import android.view.KeyEvent;
@@ -18,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.Manifest;
 
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +36,7 @@ public class TimerBeginActivity extends AppCompatActivity {
 
 
     private static final String FORMAT = "%02d:%02d:%02d";
-
+    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS =0 ;
 
     /*TextView Contact_number = (TextView)findViewById(R.id.Contact_number); */
 
@@ -46,6 +50,7 @@ public class TimerBeginActivity extends AppCompatActivity {
         final String number_sms;
         final String message_sms;
         final TextView Remaining_time_val;
+
 
         Remaining_time_val = (TextView) findViewById(R.id.remaining_time_id);
 
@@ -96,7 +101,7 @@ public class TimerBeginActivity extends AppCompatActivity {
                         mMediaPlayer.stop();
                         sendSMS(number_sms,message_sms);
 
-                    }
+                    };
                 };cntr_aCounter.start();
 
 
@@ -134,9 +139,44 @@ public class TimerBeginActivity extends AppCompatActivity {
     //external function to send sms and play sound
 
     private void sendSMS(String phoneNumber, String message){
-        SmsManager sms = SmsManager.getDefault();
-        sms.sendTextMessage(phoneNumber, null, message, null, null);
+        //SmsManager sms = SmsManager.getDefault();
+        //sms.sendTextMessage(phoneNumber, null, message, null, null);
+
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.SEND_SMS)) {
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.SEND_SMS},
+                        MY_PERMISSIONS_REQUEST_SEND_SMS);
+            }
+        }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_SEND_SMS: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    SmsManager smsManager = SmsManager.getDefault();
+                    smsManager.sendTextMessage("0838394290", null, "hello", null, null);
+                    Toast.makeText(getApplicationContext(), "SMS sent.",
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(),
+                            "SMS faild, please try again.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        }
+
+    }
+
+
 
     public void playSound(MediaPlayer med) {
 
