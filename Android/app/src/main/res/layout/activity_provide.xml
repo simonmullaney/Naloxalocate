@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Device ID: "
+            android:text="Device ID "
             android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
         <TextView
@@ -37,34 +37,30 @@
 
 
     <!--GPS Status-->
-    <LinearLayout
+
+    <TextView
         android:id="@+id/gps_status_header"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/device_id_info"
-        android:orientation="horizontal"
-        android:paddingTop="24dp">
+        android:paddingTop="24dp"
+        android:text="GPS Status "
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="GPS Status: "
-            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+    <TextView
+        android:id="@+id/gps_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/gps_status_header"
+        android:paddingTop="4dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
-        <TextView
-            android:id="@+id/gps_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="..."
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
-
-    </LinearLayout>
 
     <TextView
         android:id="@+id/gps_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/gps_status_header"
+        android:layout_below="@+id/gps_status"
         android:paddingTop="4dp"
         android:text="When turned on, your location will be periodically sent to the server so you are visible to Naloxone seekers."
         android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
@@ -110,7 +106,6 @@
         android:layout_below="@+id/delete_info"
         android:paddingTop="8dp"
         android:text="Delete Account" />
-
 
 
 </RelativeLayout>

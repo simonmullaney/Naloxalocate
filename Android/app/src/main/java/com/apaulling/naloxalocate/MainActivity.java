@@ -27,14 +27,13 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String USER_ID_PERF_KEY = "user_id";
     protected static final String TAG = "MainActivity";
-
     /*
     * Permission Location Callback
     */
     private static final int LOCATION_PERMISSION_REQUEST_CODE_FIND = 101;
     private static final int LOCATION_PERMISSION_REQUEST_CODE_PROVIDE = 102;
-
     Button btnTimerActivity;
     Button btnFindActivity;
     Button btnProvideActivity;
@@ -80,11 +79,11 @@ public class MainActivity extends AppCompatActivity {
 
                     ActivityCompat.requestPermissions(MainActivity.this,
                             new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION},
-                            LOCATION_PERMISSION_REQUEST_CODE_FIND);
+                            LOCATION_PERMISSION_REQUEST_CODE_PROVIDE);
                 } else {
                     // Check for a device id
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                    int user_id = prefs.getInt("user_id", -1);
+                    int user_id = prefs.getInt(USER_ID_PERF_KEY, -1);
                     // If yes, then open the manage screen
                     if (user_id == -1) {
                         // New user. Must get an id for the device to identify it with the server
@@ -112,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                             // Store it for next time
                             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
                             SharedPreferences.Editor editor = prefs.edit();
-                            editor.putInt("user_id", user_id);
+                            editor.putInt(USER_ID_PERF_KEY, user_id);
                             editor.apply();
 
                             // Start the activity
