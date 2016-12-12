@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="8dp"
-        android:text="Carriers Nearby"
+        android:text="Nearby Carriers"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <TextView
@@ -41,6 +41,14 @@
 
     </ListView>
 
+    <TextView
+        android:id="@+id/activity_find_list_empty_text"
+        android:layout_above="@+id/my_info_footer"
+        android:layout_below="@id/hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loading..."
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
     <LinearLayout
         android:id="@id/my_info_footer"

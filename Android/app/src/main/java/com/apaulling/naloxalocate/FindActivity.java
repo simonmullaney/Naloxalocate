@@ -57,13 +57,11 @@ import java.util.Locale;
 public class FindActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
-    protected static final String TAG = "FindActivity";
-
     // The desired interval for location updates. Inexact. Updates may be more or less frequent.
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     // The fastest rate for active location updates. Exact. Updates will never be more frequent than this value
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-
+    protected static final String TAG = "FindActivity";
     // Keys for storing activity state in the Bundle.
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
@@ -86,6 +84,30 @@ public class FindActivity extends AppCompatActivity implements
     protected TextView mLongitudeText;
     protected TextView mLastUpdateTimeText;
 
+    /**
+     * Following broadcast receiver is to listen to the Location button toggle state in Android.
+     */
+    private BroadcastReceiver mGpsSwitchStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
+                // Make an action or refresh an already managed state.
+                try {
+                    int locationMode = 0;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                        locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+                    }
+                    if (locationMode == android.provider.Settings.Secure.LOCATION_MODE_OFF) {
+                        Toast.makeText(FindActivity.this, "Oii! Turn it back on!", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Settings.SettingNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +118,11 @@ public class FindActivity extends AppCompatActivity implements
         mLastUpdateTimeText = (TextView) findViewById(R.id.last_update_time_text);
 
         mLastUpdateTime = "";
+
+        // Set list empty text
+        ListView list = (ListView) findViewById(R.id.users_nearby_list);
+        TextView listEmptyText = (TextView) findViewById(R.id.activity_find_list_empty_text);
+        list.setEmptyView(listEmptyText);
 
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
@@ -172,7 +199,7 @@ public class FindActivity extends AppCompatActivity implements
         Log.i(TAG, "Connected to GoogleApiClient");
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PERMISSION_LOCATION_START_REQ_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_LOCATION_START_REQ_CODE);
         } else {
             if (mCurrentLocation == null) {
                 mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -185,11 +212,10 @@ public class FindActivity extends AppCompatActivity implements
         }
     }
 
-    public void updateUIAndGetNearbyUsers(){
+    public void updateUIAndGetNearbyUsers() {
         if (mCurrentLocation == null) {
             updateUIWaiting();
-        }
-        else{
+        } else {
             updateUI();
             getNearbyUsers();
         }
@@ -204,6 +230,7 @@ public class FindActivity extends AppCompatActivity implements
         mLastUpdateTimeText.setText(String.format("Last Updated: %s", mLastUpdateTime));
 
     }
+
     private void updateUIWaiting() {
         Log.i(TAG, "UpdateUI null location");
         mLatitudeText.setText("Waiting for location...");
@@ -216,7 +243,7 @@ public class FindActivity extends AppCompatActivity implements
      */
     protected void startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PERMISSION_LOCATION_START_REQ_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_LOCATION_START_REQ_CODE);
         } else {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
@@ -381,7 +408,7 @@ public class FindActivity extends AppCompatActivity implements
 
         // GET method does not send the jsonRequest object, for good reason I'm sure...
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                 //(Request.Method.GET, url, new JSONObject(params), new Response.Listener<JSONObject>() {
+                //(Request.Method.GET, url, new JSONObject(params), new Response.Listener<JSONObject>() {
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                     @Override
@@ -390,10 +417,16 @@ public class FindActivity extends AppCompatActivity implements
                         try {
                             // Get the users(id, relative_dist) from the response
                             JSONArray users = response.getJSONArray("users");
+                            if (users.length() == 0) {
+                                ListView list = (ListView) findViewById(R.id.users_nearby_list);
+                                TextView listEmptyText = (TextView) findViewById(R.id.activity_find_list_empty_text);
+                                listEmptyText.setText("No Nearby Carriers");
+                                list.setEmptyView(listEmptyText);
+                            }
 
                             // Create string for each user
                             ArrayList<NearbyUser> nearbyUsers = new ArrayList(users.length());
-                            for (int i=0; i<users.length(); i++){
+                            for (int i = 0; i < users.length(); i++) {
                                 JSONArray user = users.getJSONArray(i);
                                 nearbyUsers.add(new NearbyUser(user.getInt(0), user.getDouble(1)));
                             }
@@ -410,10 +443,9 @@ public class FindActivity extends AppCompatActivity implements
                         stopLocationUpdates();
 
                         Log.i(TAG, "Error: " + error.toString());
-                        if (error instanceof NetworkError){
+                        if (error instanceof NetworkError) {
                             createNetErrorDialog();
-                        }
-                        else{
+                        } else {
                             Toast.makeText(FindActivity.this, "Error: " + error.toString(), Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -423,17 +455,17 @@ public class FindActivity extends AppCompatActivity implements
         RequestSingleton.getInstance(this).addToRequestQueue(jsObjRequest);
     }
 
-    void addUsersToList(ArrayList<NearbyUser> listItems){
+    void addUsersToList(ArrayList<NearbyUser> listItems) {
         FindListAdapter mAdapter = new FindListAdapter(FindActivity.this, R.layout.activity_find_list_item, listItems);
         ListView list = (ListView) findViewById(R.id.users_nearby_list);
         list.setAdapter(mAdapter);
 
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 NearbyUser user = (NearbyUser) adapterView.getItemAtPosition(i);
-                Toast.makeText(FindActivity.this, "User ID Selcted: "+Integer.toString(user.getId()), Toast.LENGTH_SHORT).show();
+                Toast.makeText(FindActivity.this, "User ID Selcted: " + Integer.toString(user.getId()), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -463,28 +495,4 @@ public class FindActivity extends AppCompatActivity implements
         alert.show();
     }
 
-    /**
-     * Following broadcast receiver is to listen to the Location button toggle state in Android.
-     */
-    private BroadcastReceiver mGpsSwitchStateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            if (intent.getAction().matches("android.location.PROVIDERS_CHANGED")) {
-                // Make an action or refresh an already managed state.
-                try {
-                    int locationMode = 0;
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                        locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
-                    }
-                    if (locationMode == android.provider.Settings.Secure.LOCATION_MODE_OFF) {
-                        Toast.makeText(FindActivity.this, "Oii! Turn it back on!", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (Settings.SettingNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
-    
 }
