@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -49,14 +50,12 @@ public class MainActivity extends AppCompatActivity {
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                         ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-                    ActivityCompat.requestPermissions(
-                            MainActivity.this,
+                     ActivityCompat.requestPermissions(MainActivity.this,
                             new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION},
                             PERMISSION_LOCATION_REQUEST_CODE);
-                    return;
                 }
-                // Location permission already granted, start activity
                 else {
+                    // Location permission already granted, start activity
                     MainActivity.this.startActivity(new Intent(MainActivity.this, FindActivity.class));
                 }
             }
@@ -70,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 int user_id = prefs.getInt("user_id", -1);
                 // If yes, then open the manage screen
                 if (user_id == -1) {
-                    Toast.makeText(MainActivity.this, "Getting new device id", Toast.LENGTH_SHORT).show();
+                    // New user. Must get an id for the device to identify it with the server
                     getNewDeviceId();
                 } else {
                     MainActivity.this.startActivity(new Intent(MainActivity.this, ProvideActivity.class));
@@ -90,14 +89,16 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
+                            // Get the id from the JSON response
                             int user_id = response.getInt("user_id");
-                            Toast.makeText(MainActivity.this, "Response: " + Integer.toString(user_id), Toast.LENGTH_SHORT).show();
 
+                            // Store it for next time
                             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putInt("user_id", user_id);
                             editor.apply();
 
+                            // Start the activity
                             MainActivity.this.startActivity(new Intent(MainActivity.this, ProvideActivity.class));
 
                         } catch (JSONException e) {
@@ -109,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
                         Toast.makeText(MainActivity.this, "Rsp Error: " + error.toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -120,23 +120,13 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_LOCATION_REQUEST_CODE: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // Permission was granted, yay! Start the activity
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     MainActivity.this.startActivity(new Intent(MainActivity.this, FindActivity.class));
-
-                } else {
-
-                    // Permission denied, boo!
-//                    Toast.makeText(this, "Cannot start without LOC Perms..", Toast.LENGTH_SHORT).show();
                 }
-                return;
             }
         }
     }

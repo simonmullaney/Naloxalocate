@@ -58,10 +58,7 @@ def hello_world():
 @app.route('/api/v1.0/users', methods=['GET'])
 def get_users():
     # if no json in request, Select all users from db and return as json
-    print(request.json)
-    if not request.json:
-        return jsonify(users=query_db('SELECT * FROM users'))
-    else:
+    if len(request.values) > 0 or request.json:
         # Get the args from the request
         args = getParser.parse_args()
         thisLat = args['latitude']
@@ -85,6 +82,8 @@ def get_users():
         # Sort by ascending distance
         usersNearby = sorted(usersNearby, key=itemgetter(1))
         return jsonify(users=usersNearby)
+    else:
+        return jsonify(users=query_db('SELECT * FROM users'))
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
@@ -144,7 +143,6 @@ def not_found(error):
 #   update time
 
 DATABASE = os.path.join(app.root_path, 'database.sqlite')
-print(DATABASE)
 
 def get_db():
     """Opens a new database connection if there is none yet for the

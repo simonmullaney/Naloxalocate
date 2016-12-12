@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -48,7 +47,7 @@ public class ProvideActivity extends AppCompatActivity {
             btnToggleGPS.setText("Turn On GPS Tracking");
         }
 
-        deviceIdTextView = (TextView) findViewById(R.id.deviceId);
+        deviceIdTextView = (TextView) findViewById(R.id.device_id);
         deviceIdTextView.setText(String.format(Locale.ENGLISH, "%d", user_id));
 
 

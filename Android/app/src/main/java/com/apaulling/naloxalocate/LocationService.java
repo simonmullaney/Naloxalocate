@@ -1,19 +1,26 @@
 package com.apaulling.naloxalocate;
 
+import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
@@ -28,8 +35,11 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
-import java.text.DateFormat;
-import java.util.Date;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+
+;
 
 /**
  * Created by psdco on 10/12/2016.
@@ -39,25 +49,25 @@ public class LocationService extends IntentService implements ConnectionCallback
         OnConnectionFailedListener, LocationListener {
 
     private static String TAG = "LocationService";
+
     // The desired interval for location updates. Inexact. Updates may be more or less frequent.
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     // The fastest rate for active location updates. Exact. Updates will never be more frequent than this value
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+
     // Provides the entry point to Google Play services.
     protected GoogleApiClient mGoogleApiClient;
     // Stores parameters for requests to the FusedLocationProviderApi.
     protected LocationRequest mLocationRequest;
     // Represents a geographical location.
     protected Location mCurrentLocation;
-    // Time when the location was updated represented as a String.
-    protected String mLastUpdateTime;
+
+    // Intent for releasing WAKE_LOCK
+    Intent mIntent;
 
     public LocationService() {
         super(TAG);
     }
-
-    Intent mIntent;
 
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -97,17 +107,16 @@ public class LocationService extends IntentService implements ConnectionCallback
                 LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             @Override
-            public void onResult(LocationSettingsResult result) {
+            public void onResult(@NonNull LocationSettingsResult result) {
                 final Status status = result.getStatus();
 
                 switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                         // Location settings are not satisfied.
-                        // Return from service
                         Log.i(TAG, "Location not turned on");
-                        LocationServiceReceiver.completeWakefulIntent(mIntent);
+                        // Prompt to turn it on
+                        createWarningNotification("Location off", "Tap to fix");
+                        finishService();
                         break;
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         break;
@@ -116,30 +125,44 @@ public class LocationService extends IntentService implements ConnectionCallback
         });
     }
 
+    void finishService(){
+        LocationServiceReceiver.completeWakefulIntent(mIntent);
+    }
+
+    private void createWarningNotification(String title, String content){
+        int NOTIFICATION_ID = 12345;
+
+        // Add notification contents
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.cast_ic_notification_connecting)
+                        .setContentTitle(title)
+                        .setContentText(content);
+
+        // Set tap target activity
+        Intent targetIntent = new Intent(this, ProvideActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+
+        // Notify
+        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.notify(NOTIFICATION_ID, builder.build());
+    }
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "No have permissions!");
-            // Nothing can do...
-            NotificationCompat.Builder builder =
-                    new NotificationCompat.Builder(this)
-                            .setSmallIcon(R.drawable.cast_ic_notification_small_icon)
-                            .setContentTitle("My Notification Title")
-                            .setContentText("Something interesting happened");
-            int NOTIFICATION_ID = 12345;
-
-            Intent targetIntent = new Intent(this, ProvideActivity.class);
-            PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.setContentIntent(contentIntent);
-            NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            nManager.notify(NOTIFICATION_ID, builder.build());
+            createWarningNotification("Missing Permission", "Tap to fix");
+            finishService();
         }
         else {
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            // Check if previous location is available
             if (mCurrentLocation != null) {
-                gotLocation();
+                uploadLocation();
             }
-            // Wait for location update
+            // Wait for new location
             else {
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             }
@@ -161,16 +184,45 @@ public class LocationService extends IntentService implements ConnectionCallback
 
     @Override
     public void onLocationChanged(Location location) {
+        // Got updated location. Can stop asking for it.
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         mCurrentLocation = location;
-        gotLocation();
+        // Send coordinates to server
+        uploadLocation();
     }
 
-    private void gotLocation(){
-        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-        //TODO Send to server
-        Log.i(TAG, "Accuracy: " + mCurrentLocation.getAccuracy() + " lat: " + mCurrentLocation.getLatitude() + " lon: " + mCurrentLocation.getLongitude());
+    private void uploadLocation(){
+        // Get id to identify this device
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        int user_id = prefs.getInt("user_id", -1);
 
-        LocationServiceReceiver.completeWakefulIntent(mIntent);
+        @SuppressLint("DefaultLocale")
+        String url = String.format("http://apaulling.com/naloxalocate/api/v1.0/users/%d", user_id);
+
+        // Data to be sent to the server
+        HashMap<String, String> params = new HashMap<>();
+        params.put("latitude", Double.toString(mCurrentLocation.getLatitude()));
+        params.put("longitude", Double.toString(mCurrentLocation.getLongitude()));
+        params.put("accuracy", Double.toString(mCurrentLocation.getAccuracy()));
+        params.put("last_updated", Double.toString(System.currentTimeMillis() / 1000L));
+
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.PUT, url, new JSONObject(params), new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        finishService();
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        createWarningNotification("Network Error", error.toString());
+                        finishService();
+                    }
+                });
+
+        // Access the RequestQueue through singleton class.
+        RequestSingleton.getInstance(this).addToRequestQueue(jsObjRequest);
     }
 }

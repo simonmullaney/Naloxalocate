@@ -1,27 +1,19 @@
 package com.apaulling.naloxalocate;
 
 import android.content.Context;
-import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.concurrent.TimeUnit;
-
-import static com.apaulling.naloxalocate.R.id.select_time;
 
 
 /**
@@ -93,12 +85,11 @@ public class TimerBeginActivity extends AppCompatActivity {
 
                     public void onFinish() {
                         //code fire after finish
-                        mMediaPlayer.stop();
-                        sendSMS(number_sms,message_sms);
+                        sendSMS(number_sms, message_sms);
 
                     }
-                };cntr_aCounter.start();
-
+                };
+                cntr_aCounter.start();
 
 
                 Button btnStopALarm = (Button) findViewById(R.id.btnStopALarm);
@@ -111,7 +102,6 @@ public class TimerBeginActivity extends AppCompatActivity {
 
                     }
                 });
-
 
             }
 
@@ -132,7 +122,7 @@ public class TimerBeginActivity extends AppCompatActivity {
 
     //external function to send sms and play sound
 
-    private void sendSMS(String phoneNumber, String message){
+    private void sendSMS(String phoneNumber, String message) {
         SmsManager sms = SmsManager.getDefault();
         sms.sendTextMessage(phoneNumber, null, message, null, null);
     }
