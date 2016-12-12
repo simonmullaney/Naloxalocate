@@ -7,6 +7,10 @@
 # $ python rest-server.py
 #
 ###############################################################################
+# Deploying flask
+# http://flask.pocoo.org/docs/0.11/deploying/mod_wsgi/
+# http://www.datasciencebytes.com/bytes/2015/02/24/running-a-flask-app-on-aws-ec2/
+# https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps
 
 from __future__ import print_function # In python 2.7
 import sqlite3, os, time
@@ -29,19 +33,19 @@ cors = CORS(app, resources={r"*": {"origins": "*"}})
 ###############################################################################
 
 putParser = reqparse.RequestParser()
-putParser.add_argument('latitude', type=float, required=True)
-putParser.add_argument('longitude', type=float, required=True)
-putParser.add_argument('accuracy', type=float, required=True)
-putParser.add_argument('last_updated', type=int, required=True)
+putParser.add_argument('latitude', type=float, required=True, help='latitude required, type float')
+putParser.add_argument('longitude', type=float, required=True, help='longitude required, type float')
+putParser.add_argument('accuracy', type=float, required=True, help='accuracy required, type float')
+putParser.add_argument('last_updated', type=long, required=True, help='last_updated required, type long')
 
 getParser = reqparse.RequestParser()
-getParser.add_argument('latitude', type=float, required=True)
-getParser.add_argument('longitude', type=float, required=True)
+getParser.add_argument('latitude', type=float, required=True, help='latitude required, type float')
+getParser.add_argument('longitude', type=float, required=True, help='longitude required, type float')
 
 def get_user_if_exists(user_id):
     user = query_db('SELECT * FROM users WHERE id=?', [user_id])
     if not user:
-        abort(404, message="User {} doesn't exist".format(user_id))
+        abort(404, "User {} doesn't exist".format(user_id))
     else:
         return user
 
@@ -112,7 +116,7 @@ def delete_user(user_id):
     user = get_user_if_exists(user_id)
 
     query_db('DELETE FROM users WHERE id=?', [user_id])
-    return '', 204 # Indicates success but nothing is in the response body, often used for DELETE and PUT operations
+    return jsonify(result=True), 204 # Indicates success but nothing is in the response body, often used for DELETE and PUT operations
 
 
 ###############################################################################
@@ -127,7 +131,11 @@ def bad_request(error):
 
 @app.errorhandler(404)
 def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
+    if error.description:
+        msg = error.description
+    else :
+        msg = "Not found"
+    return make_response(jsonify({'error': msg}), 404)
 
 ###############################################################################
 #

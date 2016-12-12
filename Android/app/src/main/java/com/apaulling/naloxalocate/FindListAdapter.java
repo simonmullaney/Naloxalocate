@@ -29,7 +29,7 @@ public class FindListAdapter extends ArrayAdapter<NearbyUser> {
         }
 
         NearbyUser user = getItem(position);
-        String distance = String.format("%.2fkm", user.getDistance());
+        String distance = String.format("%.2f km", user.getDistance());
 
         // Set an index number
         ((TextView) view.findViewById(R.id.index_number_text)).setText((position + 1) + ". ");

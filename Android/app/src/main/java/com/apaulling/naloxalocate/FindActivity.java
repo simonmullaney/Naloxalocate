@@ -228,7 +228,6 @@ public class FindActivity extends AppCompatActivity implements
         mLatitudeText.setText(String.format(Locale.ENGLISH, "Lat: %f", mCurrentLocation.getLatitude()));
         mLongitudeText.setText(String.format(Locale.ENGLISH, "Long: %f", mCurrentLocation.getLongitude()));
         mLastUpdateTimeText.setText(String.format("Last Updated: %s", mLastUpdateTime));
-
     }
 
     private void updateUIWaiting() {
@@ -446,7 +445,8 @@ public class FindActivity extends AppCompatActivity implements
                         if (error instanceof NetworkError) {
                             createNetErrorDialog();
                         } else {
-                            Toast.makeText(FindActivity.this, "Error: " + error.toString(), Toast.LENGTH_SHORT).show();
+                            VolleyError btrError = new VolleyError(new String(error.networkResponse.data));
+                            Toast.makeText(FindActivity.this, "Network Error" + btrError.toString(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -487,7 +487,7 @@ public class FindActivity extends AppCompatActivity implements
                 .setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                dialog.dismiss();
+                                finish();
                             }
                         }
                 );
