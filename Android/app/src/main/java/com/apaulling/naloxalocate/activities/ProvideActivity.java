@@ -24,13 +24,11 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.apaulling.naloxalocate.R;
 import com.apaulling.naloxalocate.services.LocationServiceReceiver;
 import com.apaulling.naloxalocate.util.Deodorant;
 import com.apaulling.naloxalocate.util.RequestSingleton;
-
-import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -89,24 +87,7 @@ public class ProvideActivity extends AppCompatActivity {
                 if (!locationServiceAlarmSet && !mSmellsHelper.isLocationEnabled()) {
                     mSmellsHelper.createLocationWarningDialog();
                 } else {
-                    AlarmManager alarmManager = (AlarmManager) ProvideActivity.this.getSystemService(Context.ALARM_SERVICE);
-                    PendingIntent pendingIntent = PendingIntent.getBroadcast(ProvideActivity.this, Deodorant.LOCATION_SERVICE_INTENT_REQ_CODE, locationServiceReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                    if (!locationServiceAlarmSet) {
-                        // No alarm, create it
-                        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Deodorant.LOCATION_SERVICE_REPEAT_TIME, pendingIntent); // Millisec * Second * Minute
-                        startReceiver();
-                        createNotification();
-                    } else {
-                        // If the alarm has been set, cancel it
-                        alarmManager.cancel(pendingIntent);
-                        pendingIntent.cancel();
-                        stopReceiver();
-                        destroyNotification();
-                    }
-
-                    locationServiceAlarmSet = !locationServiceAlarmSet;
-                    updateToggleGPSText();
+                    toggleAlarm();
                 }
             }
         });
@@ -156,6 +137,27 @@ public class ProvideActivity extends AppCompatActivity {
             }
         };
 
+    }
+
+    public void toggleAlarm() {
+        AlarmManager alarmManager = (AlarmManager) ProvideActivity.this.getSystemService(Context.ALARM_SERVICE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(ProvideActivity.this, Deodorant.LOCATION_SERVICE_INTENT_REQ_CODE, locationServiceReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        if (!locationServiceAlarmSet) {
+            // No alarm, create it
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Deodorant.LOCATION_SERVICE_REPEAT_TIME, pendingIntent); // Millisec * Second * Minute
+            startReceiver();
+            createNotification();
+        } else {
+            // If the alarm has been set, cancel it
+            alarmManager.cancel(pendingIntent);
+            pendingIntent.cancel();
+            stopReceiver();
+            destroyNotification();
+        }
+
+        locationServiceAlarmSet = !locationServiceAlarmSet;
+        updateToggleGPSText();
     }
 
     private void createNotification() {
@@ -212,20 +214,24 @@ public class ProvideActivity extends AppCompatActivity {
         @SuppressLint("DefaultLocale")
         String url = String.format("http://apaulling.com/naloxalocate/api/v1.0/users/%d", user_id);
 
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.DELETE, url, null, new Response.Listener<JSONObject>() {
-
-                    @SuppressLint("CommitPrefEdits")
+        // Formulate the request and handle the response.
+        StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,
+                new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String response) {
                         // Delete device id
                         prefs.edit().remove("user_id").commit();
+
+                        // Stop service if it is running
+                        if (locationServiceAlarmSet) {
+                            toggleAlarm();
+                        }
 
                         // Return to home screen
                         finish();
                     }
-                }, new Response.ErrorListener() {
-
+                },
+                new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         mSmellsHelper.handleNetError(error);
@@ -233,7 +239,7 @@ public class ProvideActivity extends AppCompatActivity {
                 });
 
         // Access the RequestQueue through singleton class.
-        RequestSingleton.getInstance(this).addToRequestQueue(jsObjRequest);
+        RequestSingleton.getInstance(this).addToRequestQueue(stringRequest);
     }
 
     /**
