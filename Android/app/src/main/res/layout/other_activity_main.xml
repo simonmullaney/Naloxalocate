@@ -32,7 +32,7 @@
             android:weightSum="2">
 
             <Button
-                android:id="@+id/btnTimerActivity"
+                android:id="@+id/btn_timer_activity"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -80,7 +80,7 @@
             android:weightSum="2">
 
             <Button
-                android:id="@+id/btnFindActivity"
+                android:id="@+id/btn_find_activity"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -129,7 +129,7 @@
             android:weightSum="2">
 
             <Button
-                android:id="@+id/btnProvideActivity"
+                android:id="@+id/btn_provide_activity"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

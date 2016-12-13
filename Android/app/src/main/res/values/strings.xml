@@ -15,5 +15,7 @@
     <string name="Remaining_time">Remaining time: </string>
     <string name="Remaining_time_val">Remaining time value: </string>
     <string name="StopAlarm">Stop Alarm: </string>
+    <string name="gps_off_text">Turn Off GPS Tracking</string>
+    <string name="gps_on_text">Turn On GPS Tracking</string>
 
 </resources>

@@ -48,25 +48,11 @@ import java.util.HashMap;
 public class LocationService extends IntentService implements ConnectionCallbacks,
         OnConnectionFailedListener, LocationListener {
 
-    // The desired interval for location updates. Inexact. Updates may be more or less frequent.
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    // The fastest rate for active location updates. Exact. Updates will never be more frequent than this value
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-
-    public static final int PERMISSION_ERROR_REQUEST_CODE = 333;
-    public static final int LOCATION_ERROR_REQUEST_CODE = 444;
-    public static final int NETWORK_ERROR_REQUEST_CODE = 555;
-    public static final String OPEN_ERROR_DIALOG_KEY = "open-dialog-error-key";
-    public static final String UPDATE_UI_DATA_KEY = "update-ui-broadcast-key";
-    public static final String UPDATE_UI_INTENT = "something-something";
-    public static final String LAST_UPDATE_PREF_KEY = "OTHIASDF";
-
-    private static String TAG = "LocationService";
+    private static final String TAG = "LocationService";
     // Provides the entry point to Google Play services.
     protected GoogleApiClient mGoogleApiClient;
     // Stores parameters for requests to the FusedLocationProviderApi.
     protected LocationRequest mLocationRequest;
-
     // Represents a geographical location.
     protected Location mCurrentLocation;
 
@@ -108,8 +94,8 @@ public class LocationService extends IntentService implements ConnectionCallback
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setInterval(Deodorant.UPDATE_INTERVAL_IN_MS);
+        mLocationRequest.setFastestInterval(Deodorant.FASTEST_UPDATE_INTERVAL_IN_MS);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         // Check location setting
@@ -127,7 +113,7 @@ public class LocationService extends IntentService implements ConnectionCallback
                         // Location settings are not satisfied.
                         Log.i(TAG, "Location not turned on");
                         // Prompt to turn it on
-                        createWarningNotification("Location off", "Tap to fix", LOCATION_ERROR_REQUEST_CODE);
+                        createWarningNotification("Location off", "Tap to fix", Deodorant.ERROR_LOCATION_REQ_CODE);
 
                         finishService();
                     }
@@ -154,7 +140,7 @@ public class LocationService extends IntentService implements ConnectionCallback
 
         // Set tap target activity
         Intent targetIntent = new Intent(this, ProvideActivity.class);
-        targetIntent.putExtra(OPEN_ERROR_DIALOG_KEY, requestCode);
+        targetIntent.putExtra(Deodorant.OPEN_ERROR_DIALOG_INTENT, requestCode);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
 
@@ -167,7 +153,7 @@ public class LocationService extends IntentService implements ConnectionCallback
     public void onConnected(@Nullable Bundle bundle) {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "No have permissions!");
-            createWarningNotification("Missing Permission", "Tap to fix", PERMISSION_ERROR_REQUEST_CODE);
+            createWarningNotification("Missing Permission", "Tap to fix", Deodorant.ERROR_PERMISSION_REQ_CODE);
             finishService();
         } else {
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -205,15 +191,15 @@ public class LocationService extends IntentService implements ConnectionCallback
     }
 
     public void sendBroadcast(long data) {
-        Intent intent = new Intent(UPDATE_UI_INTENT);
-        intent.putExtra(UPDATE_UI_DATA_KEY, data);
+        Intent intent = new Intent(Deodorant.UPDATE_UI_INTENT);
+        intent.putExtra(Deodorant.DATA_KEY_LAST_UPDATED, data);
         broadcaster.sendBroadcast(intent);
     }
 
     private void uploadLocation() {
         // Get id to identify this device
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        int user_id = prefs.getInt(MainActivity.USER_ID_PERF_KEY, -1);
+        int user_id = prefs.getInt(Deodorant.USER_ID_PERF_KEY, -1);
 
         @SuppressLint("DefaultLocale")
         String url = String.format("http://apaulling.com/naloxalocate/api/v1.0/users/%d", user_id);
@@ -234,9 +220,10 @@ public class LocationService extends IntentService implements ConnectionCallback
                     public void onResponse(JSONObject response) {
                         // Broadcast if listening
                         sendBroadcast(System.currentTimeMillis());
+
                         // Save for next time screen is opened
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                        prefs.edit().putLong(LAST_UPDATE_PREF_KEY, System.currentTimeMillis()).commit();
+                        prefs.edit().putLong(Deodorant.LAST_UPDATE_PERF_KEY, System.currentTimeMillis()).commit();
 
                         finishService();
                     }
@@ -245,11 +232,14 @@ public class LocationService extends IntentService implements ConnectionCallback
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         if (error instanceof NetworkError) {
-                            createWarningNotification("Network Error", "Please enable internet access", NETWORK_ERROR_REQUEST_CODE);
+                            createWarningNotification("Network Error", "Please enable internet access", Deodorant.ERROR_NETWORK_REQ_CODE);
                             finishService();
                         } else {
-                            VolleyError btrError = new VolleyError(new String(error.networkResponse.data));
-                            createWarningNotification("Network Error", btrError.toString(), NETWORK_ERROR_REQUEST_CODE);
+                            if (error.networkResponse != null && error.networkResponse.data != null) {
+                                // response.data is really a byte array
+                                error = new VolleyError(new String(error.networkResponse.data));
+                            }
+                            createWarningNotification("Network Error", error.toString(), Deodorant.ERROR_NETWORK_REQ_CODE);
                         }
                     }
                 });
