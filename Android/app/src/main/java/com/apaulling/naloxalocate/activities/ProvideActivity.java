@@ -220,7 +220,7 @@ public class ProvideActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         // Delete device id
-                        prefs.edit().remove("user_id").commit();
+                        prefs.edit().remove(Deodorant.USER_ID_PERF_KEY).remove(Deodorant.LAST_UPDATE_PERF_KEY).commit();
 
                         // Stop service if it is running
                         if (locationServiceAlarmSet) {

@@ -26,7 +26,11 @@
             android:layout_width="match_parent"
             android:layout_height="140dp"
             android:layout_below="@id/title"
-            android:background="@color/cast_expanded_controller_ad_label_background_color" />
+            android:text="Map Placeholder"
+            android:background="@color/cast_expanded_controller_ad_label_background_color"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/background_light"
+            android:textAlignment="center" />
 
         <TextView
             android:id="@+id/hint"

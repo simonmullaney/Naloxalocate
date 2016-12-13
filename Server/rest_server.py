@@ -13,7 +13,7 @@
 # https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps
 
 from __future__ import print_function # In python 2.7
-import sqlite3, os, time
+import sqlite3, os, time, random
 from math import radians, cos, sin, asin, sqrt # for haversine function
 from operator import itemgetter # sorting
 
@@ -43,7 +43,7 @@ getParser.add_argument('latitude', type=float, required=True, help='latitude req
 getParser.add_argument('longitude', type=float, required=True, help='longitude required, type float')
 
 def get_user_if_exists(user_id):
-    user = query_db('SELECT * FROM users WHERE id=?', [user_id])
+    user = query_db('SELECT `randid`, `latitude`, `longitude`, `accuracy`, `last_updated`, `hit_count` FROM users WHERE randid=?', [user_id])
     if not user:
         abort(404, "User {} doesn't exist".format(user_id))
     else:
@@ -70,10 +70,10 @@ def get_users():
 
         # Get the users that have updated their location in the last hour
         # hourAgo = time.time() - 3600
-        # users = query_db('SELECT * FROM users WHERE last_updated>=?', [hourAgo], dict=True)
+        # users = query_db('SELECT `randid`, `latitude`, `longitude`, `accuracy`, `last_updated`, `hit_count` FROM users WHERE last_updated>=?', [hourAgo], dict=True)
 
         # Get any users at all, for debugging...
-        users = query_db('SELECT * FROM users WHERE last_updated>=0', dict=True)
+        users = query_db('SELECT `randid`, `latitude`, `longitude`, `accuracy`, `last_updated`, `hit_count` FROM users WHERE last_updated>0', dict=True)
 
         # Get users nearby
         usersNearby = []
@@ -81,13 +81,13 @@ def get_users():
         for user in users:
             dist = haversine(thisLat, thisLong, user['latitude'], user['longitude'])
             # if dist < threshold:
-            usersNearby.append([user['id'], dist])
+            usersNearby.append([user['randid'], dist])
 
         # Sort by ascending distance
         usersNearby = sorted(usersNearby, key=itemgetter(1))
         return jsonify(users=usersNearby)
     else:
-        return jsonify(users=query_db('SELECT * FROM users'))
+        return jsonify(users=query_db('SELECT `randid`, `latitude`, `longitude`, `accuracy`, `last_updated`, `hit_count` FROM users'))
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
@@ -96,8 +96,14 @@ def get_user(user_id):
 
 @app.route('/api/v1.0/users', methods=['POST'])
 def create_user():
-    lastid = query_db('INSERT INTO users DEFAULT VALUES', getLastId=True)
-    return jsonify(user_id=lastid), 201  # CREATED
+    # Generate random ids until one that's unique has been found
+    user = True
+    while user:
+        randid = random.randint(1, 999)
+        user = query_db('SELECT 1 FROM users WHERE randid=? LIMIT 1', [randid])
+
+    query_db('INSERT INTO users (randid) VALUES (?)', [randid])
+    return jsonify(user_id=randid), 201  # CREATED
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
@@ -105,7 +111,7 @@ def update_user(user_id):
     # Validate request data
     args = putParser.parse_args()
     # Update user
-    query_db('UPDATE users SET latitude=?, longitude=?, accuracy=?, last_updated=? WHERE id=?',
+    query_db('UPDATE users SET latitude=?, longitude=?, accuracy=?, last_updated=?, hit_count=hit_count+1 WHERE randid=?',
              [args['latitude'], args['longitude'], args['accuracy'], args['last_updated'], user_id])
     # Get updated user
     user = get_user_if_exists(user_id)
@@ -115,7 +121,7 @@ def update_user(user_id):
 def delete_user(user_id):
     user = get_user_if_exists(user_id)
 
-    query_db('DELETE FROM users WHERE id=?', [user_id])
+    query_db('DELETE FROM users WHERE randid=?', [user_id])
     return '', 204 # Indicates success but nothing is in the response body, often used for DELETE and PUT operations
 
 
