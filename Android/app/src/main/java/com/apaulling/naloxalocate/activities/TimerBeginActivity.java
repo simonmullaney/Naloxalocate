@@ -1,5 +1,6 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.activities;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,7 +19,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.Manifest;
+
+import com.apaulling.naloxalocate.R;
+
 import java.util.concurrent.TimeUnit;
 
 

@@ -1,4 +1,4 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.adapters;
 
 /**
  * Created by psdco on 12/12/2016.

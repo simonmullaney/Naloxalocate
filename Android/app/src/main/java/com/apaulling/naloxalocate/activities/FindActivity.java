@@ -1,4 +1,4 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.activities;
 
 import android.Manifest;
 import android.app.Activity;
@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -28,18 +27,13 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
+import com.apaulling.naloxalocate.R;
+import com.apaulling.naloxalocate.adapters.FindListAdapter;
+import com.apaulling.naloxalocate.adapters.NearbyUser;
+import com.apaulling.naloxalocate.util.Deodorant;
+import com.apaulling.naloxalocate.util.LocationHelper;
+import com.apaulling.naloxalocate.util.RequestSingleton;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import org.json.JSONArray;
@@ -54,30 +48,26 @@ import java.util.Locale;
 /**
  * Created by psdco on 08/12/2016.
  */
-public class FindActivity extends AppCompatActivity implements
-        ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
+public class FindActivity extends AppCompatActivity implements LocationHelper.Interface {
 
     private static final String TAG = "FindActivity";
-
     // Keys for storing activity state in the Bundle.
     private final static String LOCATION_KEY = "location-key";
     private final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
-    Deodorant mHelper;
-    // Provides the entry point to Google Play services.
-    private GoogleApiClient mGoogleApiClient;
-    // Stores parameters for requests to the FusedLocationProviderApi.
-    private LocationRequest mLocationRequest;
-    // Represents a geographical location.
-    private Location mCurrentLocation;
-    // Time when the location was updated represented as a String.
+    // Instances of helper functions
+    private Deodorant mSmellsHelper; // helps with creating error dialogs
+    private LocationHelper mLocHelper; // helps with location
     // UI Labels
     private CoordinatorLayout coordinatorLayout;
-    private String mLastUpdateTime;
     private TextView mLatitudeText;
     private TextView mLongitudeText;
     private TextView mLastUpdateTimeText;
     private TextView listEmptyText;
+
+    // Time when the location was updated represented as a String.
+    private String mLastUpdateTime = "";
     /**
+     * NOT USED. CAUSED MEMORY LEAK. May fix in future
      * Following broadcast receiver is to listen to the Location button toggle state in Android.
      */
     private BroadcastReceiver mGpsSwitchStateReceiver = new BroadcastReceiver() {
@@ -101,20 +91,18 @@ public class FindActivity extends AppCompatActivity implements
         }
     };
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find);
 
-        mHelper = new Deodorant(this);
+        mSmellsHelper = new Deodorant(this);
+        mLocHelper = new LocationHelper(TAG, this, this);
 
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
         mLatitudeText = (TextView) findViewById((R.id.latitude_text));
         mLongitudeText = (TextView) findViewById((R.id.longitude_text));
         mLastUpdateTimeText = (TextView) findViewById(R.id.last_update_time_text);
-
-        mLastUpdateTime = "";
 
         // Set list empty text
         ListView list = (ListView) findViewById(R.id.users_nearby_list);
@@ -124,16 +112,13 @@ public class FindActivity extends AppCompatActivity implements
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
 
+        // Caused a memory leak, I think. May use in future
         // Register listener of location state change
-//        This causes a memory leak i think
 //        registerReceiver(mGpsSwitchStateReceiver, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
-
-        // Kick off the process of building a GoogleApiClient and requesting the LocationServices API.
-        buildGoogleApiClient();
-        createLocationRequest();
-        // Ask user to turn on location
-        locationSettingsRequest();
     }
+
+
+    /** LocationHelper Interface methods */
 
     /**
      * Updates fields based on data stored in the bundle.
@@ -147,7 +132,7 @@ public class FindActivity extends AppCompatActivity implements
             if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
                 // is not null.
-                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+                mLocHelper.mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
             }
 
             // Update the value of mLastUpdateTime from the Bundle and update the UI.
@@ -159,98 +144,70 @@ public class FindActivity extends AppCompatActivity implements
     }
 
     /**
-     * Builds a GoogleApiClient. Uses the addApi() method to request the LocationServices API.
-     */
-    protected synchronized void buildGoogleApiClient() {
-        Log.i(TAG, "Building GoogleApiClient");
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-    }
-
-    /**
-     * Sets up the location request.
-     */
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-
-        // Sets the desired interval for active location updates. This interval is
-        // inexact. You may not receive updates at all if no location sources are available, or
-        // you may receive them slower than requested. You may also receive updates faster than
-        // requested if other applications are requesting location at a faster interval.
-        mLocationRequest.setInterval(Deodorant.UPDATE_INTERVAL_IN_MS);
-
-        // Sets the fastest rate for active location updates. This interval is exact, and your
-        // application will never receive updates faster than this value.
-        mLocationRequest.setFastestInterval(Deodorant.FASTEST_UPDATE_INTERVAL_IN_MS);
-
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
-
-    /**
-     * Prompt user to enable location settings
-     */
-    // https://developers.google.com/android/reference/com/google/android/gms/location/SettingsApi
-    public void locationSettingsRequest() {
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(mLocationRequest);
-        builder.setAlwaysShow(true);
-
-        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(@NonNull LocationSettingsResult result) {
-                final Status status = result.getStatus();
-
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        // Location settings are not satisfied. Show the user a dialog.
-                        try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            status.startResolutionForResult(FindActivity.this, Deodorant.SETTINGS_LOCATION_ENABLE_REQ_CODE);
-                        } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        // Location settings are not satisfied. However, we have no way to fix the
-                        // settings so we won't show the dialog.
-                        Toast.makeText(FindActivity.this, "Could not enable location", Toast.LENGTH_SHORT).show();
-                        finish();
-                        break;
-                }
-            }
-        });
-    }
-
-    /**
      * Runs when a GoogleApiClient object successfully connects.
      */
     @Override
-    public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "Connected to GoogleApiClient");
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Deodorant.PERMISSION_LOCATION_START_REQ_CODE);
-        } else {
-            if (mCurrentLocation == null) {
-                mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-                mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-                updateUIAndGetNearbyUsers();
-            }
-
-            // Start periodic location updates.
-            startLocationUpdates();
+    public void onConnected() {
+        // Null is location not requested since reboot
+        // Wouldn't be null if loaded from bundle
+        if (mLocHelper.mCurrentLocation == null) {
+            mLocHelper.getLastLocation();
+            setLastUpdateTime();
+            updateUIAndGetNearbyUsers();
         }
+
+        // Start periodic location updates.
+        mLocHelper.startLocationUpdates();
+    }
+
+    /**
+     * Callback that fires when the location changes
+     */
+    @Override
+    public void onLocationChanged() {
+        setLastUpdateTime();
+        updateUIAndGetNearbyUsers();
+    }
+
+    /**
+     * Callback if no location permission
+     * Creates Google like prompt to enable GPS, if that's possible
+     */
+    @Override
+    public void locationSettingsResultCallback(Status status) {
+        switch (status.getStatusCode()) {
+            case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                // Location settings are not satisfied. Show the user a dialog.
+                try {
+                    // Show the dialog by calling startResolutionForResult(),
+                    // and check the result in onActivityResult().
+                    status.startResolutionForResult(FindActivity.this, Deodorant.SETTINGS_LOCATION_ENABLE_REQ_CODE);
+                } catch (IntentSender.SendIntentException e) {
+                    // Ignore the error.
+                }
+                break;
+            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                // Location settings are not satisfied. However, we have no way to fix the
+                // settings so we won't show the dialog.
+                Toast.makeText(FindActivity.this, "Could not enable location", Toast.LENGTH_SHORT).show();
+                finish();
+                break;
+        }
+    }
+
+    /**
+     * Present permission dialog
+     */
+    @Override
+    public void handleNoLocationPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Deodorant.PERMISSION_LOCATION_START_REQ_CODE);
     }
 
     /**
      * Updates my location text and get users if location is available
      */
     public void updateUIAndGetNearbyUsers() {
-        if (mCurrentLocation == null) {
+        if (mLocHelper.mCurrentLocation == null) {
             updateUIWaiting();
         } else {
             updateUI();
@@ -259,16 +216,24 @@ public class FindActivity extends AppCompatActivity implements
     }
 
     /**
+     * Update the lastUpdates time. Only called when new location is available.
+     * mLastUpdateTime also changed when loading from bundle.
+     */
+    private void setLastUpdateTime() {
+        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+    }
+
+    /**
      * Updates the latitude, the longitude, and the last location time in the UI.
      */
     private void updateUI() {
-        mLatitudeText.setText(String.format(Locale.ENGLISH, "Lat: %f", mCurrentLocation.getLatitude()));
-        mLongitudeText.setText(String.format(Locale.ENGLISH, "Long: %f", mCurrentLocation.getLongitude()));
+        mLatitudeText.setText(String.format(Locale.ENGLISH, "Lat: %f", mLocHelper.mCurrentLocation.getLatitude()));
+        mLongitudeText.setText(String.format(Locale.ENGLISH, "Long: %f", mLocHelper.mCurrentLocation.getLongitude()));
         mLastUpdateTimeText.setText(String.format("Last Updated: %s", mLastUpdateTime));
     }
 
     /**
-     * Updates current status to show that location is not yet available.
+     * Updates current status to indicate location is not yet available.
      * Can happen after device boot
      */
     private void updateUIWaiting() {
@@ -276,25 +241,6 @@ public class FindActivity extends AppCompatActivity implements
         mLatitudeText.setText("Waiting for location...");
         mLongitudeText.setText("");
         mLastUpdateTimeText.setText("");
-    }
-
-    /**
-     * Removes location updates from the FusedLocationApi.
-     * Must first check permissions
-     */
-    protected void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Deodorant.PERMISSION_LOCATION_START_REQ_CODE);
-        } else {
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-        }
-    }
-
-    /**
-     * Removes location updates from the FusedLocationApi.
-     */
-    protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
 
     /**
@@ -306,7 +252,7 @@ public class FindActivity extends AppCompatActivity implements
             case Deodorant.PERMISSION_LOCATION_START_REQ_CODE:
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    this.onConnected(null);
+                    mLocHelper.onConnected(null);
                 } else {
                     finish();
                 }
@@ -317,15 +263,15 @@ public class FindActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
+        mLocHelper.mGoogleApiClient.connect();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
-        if (mGoogleApiClient.isConnected()) {
-            stopLocationUpdates();
+        if (mLocHelper.mGoogleApiClient.isConnected()) {
+            mLocHelper.stopLocationUpdates();
         }
     }
 
@@ -335,49 +281,24 @@ public class FindActivity extends AppCompatActivity implements
         // Within {@code onPause()}, we pause location updates, but leave the
         // connection to GoogleApiClient intact.  Here, we resume receiving
         // location updates if the user has requested them.
-        if (mGoogleApiClient.isConnected()) {
-            startLocationUpdates();
+        if (mLocHelper.mGoogleApiClient.isConnected()) {
+            mLocHelper.startLocationUpdates();
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
+        if (mLocHelper.mGoogleApiClient.isConnected()) {
+            mLocHelper.mGoogleApiClient.disconnect();
         }
-    }
-
-    /**
-     * Callback that fires when the location changes.
-     */
-    @Override
-    public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
-        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-        updateUIAndGetNearbyUsers();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
-        // onConnectionFailed.
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        // The connection to Google Play services was lost for some reason. We call connect() to
-        // attempt to re-establish the connection.
-        Log.i(TAG, "Connection suspended");
-        mGoogleApiClient.connect();
     }
 
     /**
      * Stores activity data in the Bundle.
      */
     protected void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
+        savedInstanceState.putParcelable(LOCATION_KEY, mLocHelper.mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
     }
@@ -392,7 +313,7 @@ public class FindActivity extends AppCompatActivity implements
             case Deodorant.SETTINGS_LOCATION_ENABLE_REQ_CODE:
                 switch (resultCode) {
                     case Activity.RESULT_OK: {
-                        this.onConnected(null);
+                        mLocHelper.onConnected(null);
                         break;
                     }
                     case Activity.RESULT_CANCELED: {
@@ -409,7 +330,7 @@ public class FindActivity extends AppCompatActivity implements
      */
     private void getNearbyUsers() {
         String url = String.format(Locale.ENGLISH, "http://apaulling.com/naloxalocate/api/v1.0/users?latitude=%f&longitude=%f",
-                mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                mLocHelper.mCurrentLocation.getLatitude(), mLocHelper.mCurrentLocation.getLongitude());
 
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -421,7 +342,7 @@ public class FindActivity extends AppCompatActivity implements
                             // Get the users(id, relative_dist) from the response
                             JSONArray users = response.getJSONArray("users");
                             if (users.length() == 0) {
-                                listEmptyText.setText("No Nearby Carriers");
+                                listEmptyText.setText(R.string.find_empty_list_text);
                             }
 
                             // Convert from JSON to NearbyUser Objects
@@ -439,11 +360,11 @@ public class FindActivity extends AppCompatActivity implements
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // Network error so stop trying to receive location updates
-                        stopLocationUpdates();
+                        mLocHelper.stopLocationUpdates();
                         // Indicate that updates have stopped and prompt to retry
                         showLocUpdatesOffSnackBar();
 
-                        mHelper.handleNetError(error);
+                        mSmellsHelper.handleNetError(error);
                     }
                 });
 
@@ -467,11 +388,13 @@ public class FindActivity extends AppCompatActivity implements
      * Notify user updates have stopped.
      */
     private void showLocUpdatesOffSnackBar() {
-        final Snackbar snackbar = Snackbar.make(coordinatorLayout, "Location Updates Stopped!", Snackbar.LENGTH_INDEFINITE);
+        final Snackbar snackbar = Snackbar.make(coordinatorLayout, "Location Updates Paused", Snackbar.LENGTH_INDEFINITE);
         snackbar.setAction("RETRY", new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startLocationUpdates();
+                // Attempt to restart location updates.
+                // Will fail again if internet or location unavailable and snackbar will reappear
+                mLocHelper.startLocationUpdates();
                 snackbar.dismiss();
             }
         });

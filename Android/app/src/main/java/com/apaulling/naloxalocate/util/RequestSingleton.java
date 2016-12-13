@@ -1,4 +1,4 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.util;
 
 import android.content.Context;
 
@@ -9,7 +9,7 @@ import com.android.volley.toolbox.Volley;
 /**
  * Created by psdco on 08/12/2016.
  */
-class RequestSingleton {
+public class RequestSingleton {
     private static RequestSingleton mInstance;
     private static Context mCtx;
     private RequestQueue mRequestQueue;

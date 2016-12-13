@@ -17,5 +17,6 @@
     <string name="StopAlarm">Stop Alarm: </string>
     <string name="gps_off_text">Turn Off GPS Tracking</string>
     <string name="gps_on_text">Turn On GPS Tracking</string>
+    <string name="find_empty_list_text">No Nearby Carriers</string>
 
 </resources>

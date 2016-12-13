@@ -1,4 +1,4 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.services;
 
 import android.content.Context;
 import android.content.Intent;

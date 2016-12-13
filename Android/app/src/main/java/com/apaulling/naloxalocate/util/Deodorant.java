@@ -1,4 +1,4 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.util;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,34 +17,33 @@ import com.android.volley.VolleyError;
  * Created by psdco on 12/12/2016.
  */
 
-class Deodorant {
+public class Deodorant {
 
     // MainActivity
-    static final int PERMISSION_LOCATION_FIND_REQ_CODE = 11;
-    static final int PERMISSION_LOCATION_PROVIDE_REQ_CODE = 22;
-    static final String USER_ID_PERF_KEY = "user_id";
+    public static final int PERMISSION_LOCATION_FIND_REQ_CODE = 11;
+    public static final int PERMISSION_LOCATION_PROVIDE_REQ_CODE = 22;
+    public static final String USER_ID_PERF_KEY = "user_id";
 
     // Find Activity Request Codes
-    static final int PERMISSION_LOCATION_START_REQ_CODE = 111;
-    static final int SETTINGS_LOCATION_ENABLE_REQ_CODE = 222;
+    public static final int PERMISSION_LOCATION_START_REQ_CODE = 111;
+    public static final int SETTINGS_LOCATION_ENABLE_REQ_CODE = 222;
 
     // Provide Activity Req
-    static final int LOCATION_SERVICE_INTENT_REQ_CODE = 1111;
-    static final int LOCATION_SERVICE_REPEAT_TIME = 1000 * 60 * 1;
+    public static final int LOCATION_SERVICE_INTENT_REQ_CODE = 1111;
+    public static final int LOCATION_SERVICE_REPEAT_TIME = 1000 * 60 * 1; // minimum is 60s
 
     // Location Service
-    static final int ERROR_PERMISSION_REQ_CODE = 333;
-    static final int ERROR_LOCATION_REQ_CODE = 444;
-    static final int ERROR_NETWORK_REQ_CODE = 555;
-    static final String OPEN_ERROR_DIALOG_INTENT = "open-dialog-error-key";
-    static final String DATA_KEY_LAST_UPDATED = "update-ui-broadcast-key";
-    static final String UPDATE_UI_INTENT = "something-something";
-    static final String LAST_UPDATE_PERF_KEY = "keys-open-doors";
+    public static final int ERROR_PERMISSION_REQ_CODE = 333;
+    public static final int ERROR_LOCATION_REQ_CODE = 444;
+    public static final int ERROR_NETWORK_REQ_CODE = 555;
+    public static final String OPEN_ERROR_DIALOG_INTENT = "open-dialog-error-key";
+    public static final String DATA_KEY_LAST_UPDATED = "update-ui-broadcast-key";
+    public static final String UPDATE_UI_INTENT = "something-something";
+    public static final String LAST_UPDATE_PERF_KEY = "keys-open-doors";
 
-    // The desired interval for location updates. Inexact. Updates may be more or less frequent.
-    static final long UPDATE_INTERVAL_IN_MS = 10000;
-    // The fastest rate for active location updates. Exact. Updates will never be more frequent than this value
-    static final long FASTEST_UPDATE_INTERVAL_IN_MS = UPDATE_INTERVAL_IN_MS / 2;
+    // Notification IDs
+    public static final int ERROR_NOTIFICATION_ID = 12345;
+    public static final int SERVICE_ON_NOTIFICATION_ID = 43232;
 
     /**
      * Local Vars
@@ -55,7 +54,7 @@ class Deodorant {
     /**
      * The calling Activity's context is required for creating dialogs
      */
-    Deodorant(Context context) {
+    public Deodorant(Context context) {
         mContext = context;
         TAG = context.getClass().getSimpleName();
     }
@@ -64,7 +63,7 @@ class Deodorant {
      * Makes errors prettier and handles WIFI disabled
      * Called in VolleyError handlers
      */
-    void handleNetError(VolleyError error) {
+    public void handleNetError(VolleyError error) {
         Log.i(TAG, "Error: " + error.toString());
         if (error instanceof NetworkError) {
             createNetErrorDialog();
@@ -80,7 +79,7 @@ class Deodorant {
     /**
      * Prompt to enable WIFI
      */
-    void createNetErrorDialog() {
+    public void createNetErrorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setMessage("You need a network connection to use this application. Please turn on mobile network or Wi-Fi in Settings.")
                 .setTitle("Unable to connect")
@@ -107,7 +106,7 @@ class Deodorant {
     /**
      * Prompt to enable location services
      */
-    void createLocationWarningDialog() {
+    public void createLocationWarningDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Unable to get location");
         builder.setMessage("You need a network connection to use this application. Please turn on mobile network or Wi-Fi in Settings.");
@@ -132,7 +131,7 @@ class Deodorant {
      *
      * @param dialogClickListener Takes click handler as argument so that this functionality can be customised
      */
-    void createAreSureWarningDialog(DialogInterface.OnClickListener dialogClickListener) {
+    public void createAreSureWarningDialog(DialogInterface.OnClickListener dialogClickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setMessage("Are you sure?")
                 .setPositiveButton("Yes", dialogClickListener)
@@ -143,7 +142,7 @@ class Deodorant {
     /*
     * Gets location status
     */
-    boolean isLocationEnabled() {
+    public boolean isLocationEnabled() {
         int locationMode;
         String locationProviders;
 

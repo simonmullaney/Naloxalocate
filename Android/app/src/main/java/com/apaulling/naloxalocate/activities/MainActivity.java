@@ -1,4 +1,4 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,6 +16,9 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.apaulling.naloxalocate.R;
+import com.apaulling.naloxalocate.util.Deodorant;
+import com.apaulling.naloxalocate.util.RequestSingleton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,13 +26,11 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
 
     protected static final String TAG = "MainActivity";
-
     // UI elements
     Button btnTimerActivity;
     Button btnFindActivity;
     Button btnProvideActivity;
-
-    private Deodorant mHelper;
+    private Deodorant mSmellsHelper; // helps with creating error dialogs
     private SharedPreferences prefs;
 
     @Override
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.other_activity_main);
 
-        mHelper = new Deodorant(this);
+        mSmellsHelper = new Deodorant(this);
 
         btnTimerActivity = (Button) findViewById(R.id.btn_timer_activity);
         btnFindActivity = (Button) findViewById(R.id.btn_find_activity);
@@ -124,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        mHelper.handleNetError(error);
+                        mSmellsHelper.handleNetError(error);
                     }
                 });
 

@@ -1,7 +1,8 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.activities;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,6 +13,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -23,6 +25,10 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.apaulling.naloxalocate.R;
+import com.apaulling.naloxalocate.services.LocationServiceReceiver;
+import com.apaulling.naloxalocate.util.Deodorant;
+import com.apaulling.naloxalocate.util.RequestSingleton;
 
 import org.json.JSONObject;
 
@@ -38,9 +44,9 @@ public class ProvideActivity extends AppCompatActivity {
     protected static final String TAG = "ProvideActivity";
 
     private SharedPreferences prefs;
-    private Intent locationServiceReceiverIntent;
-    private BroadcastReceiver locServiceReceiver;
-    private Deodorant mHelper;
+    private Intent locationServiceReceiverIntent; // for starting LocationService
+    private BroadcastReceiver locServiceReceiver; // listen for LocationService updates
+    private Deodorant mSmellsHelper; // helps with creating error dialogs
 
     // Views
     private Button btnToggleGPS;
@@ -54,7 +60,7 @@ public class ProvideActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_provide);
 
-        mHelper = new Deodorant(this);
+        mSmellsHelper = new Deodorant(this); // helps with creating error dialogs
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
@@ -80,8 +86,8 @@ public class ProvideActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // If starting alarm, enable location
-                if (!locationServiceAlarmSet && !mHelper.isLocationEnabled()) {
-                    mHelper.createLocationWarningDialog();
+                if (!locationServiceAlarmSet && !mSmellsHelper.isLocationEnabled()) {
+                    mSmellsHelper.createLocationWarningDialog();
                 } else {
                     AlarmManager alarmManager = (AlarmManager) ProvideActivity.this.getSystemService(Context.ALARM_SERVICE);
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(ProvideActivity.this, Deodorant.LOCATION_SERVICE_INTENT_REQ_CODE, locationServiceReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -90,11 +96,13 @@ public class ProvideActivity extends AppCompatActivity {
                         // No alarm, create it
                         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Deodorant.LOCATION_SERVICE_REPEAT_TIME, pendingIntent); // Millisec * Second * Minute
                         startReceiver();
+                        createNotification();
                     } else {
                         // If the alarm has been set, cancel it
                         alarmManager.cancel(pendingIntent);
                         pendingIntent.cancel();
                         stopReceiver();
+                        destroyNotification();
                     }
 
                     locationServiceAlarmSet = !locationServiceAlarmSet;
@@ -118,7 +126,7 @@ public class ProvideActivity extends AppCompatActivity {
                     }
                 };
                 // Create "are you sure" with custom on click
-                mHelper.createAreSureWarningDialog(dialogClickListener);
+                mSmellsHelper.createAreSureWarningDialog(dialogClickListener);
             }
         });
 
@@ -131,10 +139,10 @@ public class ProvideActivity extends AppCompatActivity {
                     Toast.makeText(this, "Permissions...", Toast.LENGTH_SHORT).show();
                     break;
                 case Deodorant.ERROR_LOCATION_REQ_CODE:
-                    mHelper.createLocationWarningDialog();
+                    mSmellsHelper.createLocationWarningDialog();
                     break;
                 case Deodorant.ERROR_NETWORK_REQ_CODE:
-                    mHelper.createNetErrorDialog();
+                    mSmellsHelper.createNetErrorDialog();
                     break;
             }
         }
@@ -148,6 +156,31 @@ public class ProvideActivity extends AppCompatActivity {
             }
         };
 
+    }
+
+    private void createNotification() {
+        // Add notification contents
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_stat_app_icon_status_bar)
+                        .setContentTitle("Naloxalocate is enabled")
+                        .setContentText("Touch to manage your status")
+                        .setOngoing(true);
+
+        // Set tap target activity
+        Intent targetIntent = new Intent(this, ProvideActivity.class);
+//        targetIntent.putExtra(Deodorant.OPEN_ERROR_DIALOG_INTENT, requestCode);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+
+        // Notify
+        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.notify(Deodorant.SERVICE_ON_NOTIFICATION_ID, builder.build());
+    }
+
+    private void destroyNotification() {
+        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.cancel(Deodorant.SERVICE_ON_NOTIFICATION_ID);
     }
 
     /**
@@ -195,7 +228,7 @@ public class ProvideActivity extends AppCompatActivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        mHelper.handleNetError(error);
+                        mSmellsHelper.handleNetError(error);
                     }
                 });
 

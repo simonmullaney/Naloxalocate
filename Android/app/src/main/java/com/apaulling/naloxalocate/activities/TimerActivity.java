@@ -1,4 +1,4 @@
-package com.apaulling.naloxalocate;
+package com.apaulling.naloxalocate.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +10,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+
+import com.apaulling.naloxalocate.R;
 
 
 /**
@@ -23,6 +25,8 @@ public class TimerActivity extends AppCompatActivity implements View.OnClickList
     static String number_str;
     private static Integer time_int;
     private static String message;
+    private static EditText select_time_val;
+    String time_str;
     private String contact_number, emergency_message, contact_name;
     private Button ch;
     private EditText editTextContactNumber, editTextConatctName, editTextMessage, editTextTime;
@@ -30,8 +34,6 @@ public class TimerActivity extends AppCompatActivity implements View.OnClickList
     private SharedPreferences loginPreferences;
     private SharedPreferences.Editor loginPrefsEditor;
     private Boolean saveLogin;
-    private static EditText select_time_val;
-    String time_str;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
