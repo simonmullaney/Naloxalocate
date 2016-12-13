@@ -30,31 +30,8 @@ public class TimerActivity extends AppCompatActivity implements View.OnClickList
     private SharedPreferences loginPreferences;
     private SharedPreferences.Editor loginPrefsEditor;
     private Boolean saveLogin;
-
-    public static Integer getTime_int() {
-        return time_int;
-    }
-
-    public static void setTime_int(Integer time_int) {
-
-        TimerActivity.time_int = time_int;
-    }
-
-    public static String getNumber() {
-        return number_str;
-    }
-
-    public static void setNumber(String number_str) {
-        TimerActivity.number_str = number_str;
-    }
-
-    public static String getMessage() {
-        return message;
-    }
-
-    public static void setMessage(String message) {
-        TimerActivity.message = message;
-    }
+    private static EditText select_time_val;
+    String time_str;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,20 +45,16 @@ public class TimerActivity extends AppCompatActivity implements View.OnClickList
         ch.setOnClickListener(this);
 
         editTextContactNumber = (EditText) findViewById(R.id.Contact_number_id);
-        //number_str = editTextContactNumber.getText().toString();
-        setNumber(number_str);
-
-        editTextMessage = (EditText) findViewById(R.id.emergency_message_id);
-        //message = editTextMessage.getText().toString();
-        setMessage(message);
-
-
-        editTextTime = (EditText) findViewById(R.id.emergency_message_id);
-        //time_int = Integer.parseInt(editTextTime.getText().toString());
-        setTime_int(time_int);
-
-
         editTextConatctName = (EditText) findViewById(R.id.emergency_contact_name_id);
+        editTextMessage = (EditText) findViewById(R.id.emergency_message_id);
+
+
+        select_time_val = (EditText) findViewById(R.id.select_time);
+        //time_lng = Long.parseLong(select_time_val.getText().toString());
+
+
+
+
 
         saveLoginCheckBox = (CheckBox) findViewById(R.id.checkBox_id);
 
@@ -107,6 +80,8 @@ public class TimerActivity extends AppCompatActivity implements View.OnClickList
             contact_name = editTextConatctName.getText().toString();
             emergency_message = editTextMessage.getText().toString();
 
+
+
             if (saveLoginCheckBox.isChecked()) {
                 loginPrefsEditor.putBoolean("saveLogin", true);
                 loginPrefsEditor.putString("contact_number", contact_number);
@@ -121,12 +96,26 @@ public class TimerActivity extends AppCompatActivity implements View.OnClickList
 
         }
         Button btnBeginTimerActivity = (Button) findViewById(R.id.btnBeginTimerActivity);
+/*
+        select_time_val.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getApplicationContext(), TimerBeginActivity.class);
+                time_str = select_time_val.getText().toString();
+                i.putExtra("time", time_str);
+                startActivity(i);
+            }
 
+        });
+*/
         btnBeginTimerActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TimerActivity.this.startActivity(new Intent(TimerActivity.this, TimerBeginActivity.class));
-
+                //TimerActivity.this.startActivity(new Intent(TimerActivity.this, TimerBeginActivity.class));
+                Intent i = new Intent(getApplicationContext(), TimerBeginActivity.class);
+                time_str = select_time_val.getText().toString();
+                i.putExtra("time", time_str);
+                startActivity(i);
             }
         });
     }
