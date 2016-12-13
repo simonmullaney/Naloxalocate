@@ -83,12 +83,12 @@ public class Deodorant {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setMessage("You need a network connection to use this application. Please turn on mobile network or Wi-Fi in Settings.")
                 .setTitle("Unable to connect")
-                .setCancelable(false)
                 .setPositiveButton("Settings",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 Intent i = new Intent(Settings.ACTION_WIFI_SETTINGS);
                                 mContext.startActivity(i);
+                                dialog.dismiss();
                             }
                         }
                 )

@@ -51,9 +51,11 @@ import java.util.Locale;
 public class FindActivity extends AppCompatActivity implements LocationHelper.Interface {
 
     private static final String TAG = "FindActivity";
+
     // Keys for storing activity state in the Bundle.
     private final static String LOCATION_KEY = "location-key";
     private final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
+    Snackbar snackbar = null; // shows updates are disabled
     // Instances of helper functions
     private Deodorant mSmellsHelper; // helps with creating error dialogs
     private LocationHelper mLocHelper; // helps with location
@@ -66,6 +68,9 @@ public class FindActivity extends AppCompatActivity implements LocationHelper.In
 
     // Time when the location was updated represented as a String.
     private String mLastUpdateTime = "";
+    // Prevent dialog showing twice is both internet and gps are off
+    private boolean netErrorShowing = false;
+
     /**
      * NOT USED. CAUSED MEMORY LEAK. May fix in future
      * Following broadcast receiver is to listen to the Location button toggle state in Android.
@@ -158,6 +163,10 @@ public class FindActivity extends AppCompatActivity implements LocationHelper.In
 
         // Start periodic location updates.
         mLocHelper.startLocationUpdates();
+
+        if (snackbar != null && snackbar.isShown()) {
+            snackbar.dismiss();
+        }
     }
 
     /**
@@ -172,6 +181,7 @@ public class FindActivity extends AppCompatActivity implements LocationHelper.In
     /**
      * Callback if no location permission
      * Creates Google like prompt to enable GPS, if that's possible
+     * Callback handled in onActivityResult method
      */
     @Override
     public void locationSettingsResultCallback(Status status) {
@@ -317,7 +327,11 @@ public class FindActivity extends AppCompatActivity implements LocationHelper.In
                         break;
                     }
                     case Activity.RESULT_CANCELED: {
-                        finish();
+                        // If no location, then finish activity.
+                        // Otherwise it will operate on old location
+                        if (mLocHelper.mCurrentLocation == null) {
+                            finish();
+                        }
                         break;
                     }
                 }
@@ -350,6 +364,9 @@ public class FindActivity extends AppCompatActivity implements LocationHelper.In
 
                             // Add users to UI after converting from JSON
                             addUsersToList(nearbyUsers);
+
+                            // Dialog not showing
+                            netErrorShowing = false;
                         } catch (JSONException e) {
                             Toast.makeText(FindActivity.this, "JSON Error: " + e.toString(), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
@@ -363,8 +380,10 @@ public class FindActivity extends AppCompatActivity implements LocationHelper.In
                         mLocHelper.stopLocationUpdates();
                         // Indicate that updates have stopped and prompt to retry
                         showLocUpdatesOffSnackBar();
-
-                        mSmellsHelper.handleNetError(error);
+                        if (!netErrorShowing) {
+                            mSmellsHelper.handleNetError(error);
+                            netErrorShowing = true;
+                        }
                     }
                 });
 
@@ -388,19 +407,19 @@ public class FindActivity extends AppCompatActivity implements LocationHelper.In
      * Notify user updates have stopped.
      */
     private void showLocUpdatesOffSnackBar() {
-        final Snackbar snackbar = Snackbar.make(coordinatorLayout, "Location Updates Paused", Snackbar.LENGTH_INDEFINITE);
-        snackbar.setAction("RETRY", new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Attempt to restart location updates.
-                // Will fail again if internet or location unavailable and snackbar will reappear
-                mLocHelper.startLocationUpdates();
-                snackbar.dismiss();
-            }
-        });
-
-        // Changing message text color
-        snackbar.setActionTextColor(Color.RED);
+        if (snackbar == null) {
+            snackbar = Snackbar.make(coordinatorLayout, "Location Updates Paused", Snackbar.LENGTH_INDEFINITE);
+            snackbar.setAction("RETRY", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Attempt to restart location updates.
+                    // Will fail again if internet or location unavailable and snackbar will reappear
+                    mLocHelper.startLocationUpdates();
+                    snackbar.dismiss();
+                }
+            });
+            snackbar.setActionTextColor(Color.RED); // Changing message text color
+        }
         snackbar.show();
     }
 
