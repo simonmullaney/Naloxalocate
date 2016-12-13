@@ -3,7 +3,7 @@
 #
 # Instructions
 #
-# Run this app with the command
+# Run with the command
 # $ python rest-server.py
 #
 ###############################################################################
@@ -116,7 +116,7 @@ def delete_user(user_id):
     user = get_user_if_exists(user_id)
 
     query_db('DELETE FROM users WHERE id=?', [user_id])
-    return jsonify(result=True), 204 # Indicates success but nothing is in the response body, often used for DELETE and PUT operations
+    return '', 204 # Indicates success but nothing is in the response body, often used for DELETE and PUT operations
 
 
 ###############################################################################
