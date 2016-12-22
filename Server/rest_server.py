@@ -18,12 +18,10 @@ from math import radians, cos, sin, asin, sqrt # for haversine function
 from operator import itemgetter # sorting
 
 from flask import Flask, jsonify, abort, request, make_response, g
-from flask_cors import CORS, cross_origin
 from flask_restful import reqparse
 
 app = Flask(__name__, static_url_path="")
 app.config['DEBUG'] = True
-cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 
 ###############################################################################
