@@ -12,7 +12,7 @@
         android:layout_height="405dp"
         android:id="@+id/remaining_time_id"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="100dp"/>
+        android:textSize="90dp"/>
 
     <Button
         android:layout_width="match_parent"
