@@ -17,6 +17,12 @@ class FlaskrTestCase(unittest.TestCase):
         os.close(self.db_fd)
         os.unlink(rest_server.app.DATABASE)
         
+    #   test_empty_database tests for an empty database 
+    def test_empty_database(self):
+        rv = self.app.get('/api/v1.0/users')
+        assert '{"users":[]}' in rv.data
+     
+    
     #   test_get_NonValidID checks taht an error message is returned if a non valid ID is entered 
     def test_get_NonValidID(self):
         # Create user 1
@@ -29,12 +35,12 @@ class FlaskrTestCase(unittest.TestCase):
         
         #Get data with no User Id
         rv = self.app.get('/api/v1.0/users/')
-        print rv.data
+       
         assert '{"error":"The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again."}' in rv.data
         
         #Get data of User Id that doesn't exist
         rv = self.app.get('/api/v1.0/users/0')
-        print rv.data
+        
         assert '{"error":"User 0 doesn\'t exist"}' in rv.data
        
      #  test_null_values checks that error message is returned if required fields aren't passed\left blank 
