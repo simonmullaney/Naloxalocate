@@ -32,18 +32,24 @@ public class LocationHelper implements ConnectionCallbacks, OnConnectionFailedLi
     private static final long UPDATE_INTERVAL_IN_MS = 10000;
     // The fastest rate for active location updates. Exact. Updates will never be more frequent than this value
     private static final long FASTEST_UPDATE_INTERVAL_IN_MS = UPDATE_INTERVAL_IN_MS / 2;
-    // TODO Use getters...
-    // Provides the entry point to Google Play services.
-    public GoogleApiClient mGoogleApiClient;
-    // Represents a geographical location.
-    public Location mCurrentLocation;
+
+    // Other member vars set in constructor
     private String TAG;
     private Interface mInterface;
     private Context mContext;
-    // Stores parameters for requests to the FusedLocationProviderApi.
-    private LocationRequest mLocationRequest;
 
-    // Constructor
+    // API Vars
+    private GoogleApiClient mGoogleApiClient; // Provides the entry point to Google Play services.
+    private Location mCurrentLocation; // Represents a geographical location.
+    private LocationRequest mLocationRequest;    // Stores parameters for requests to the FusedLocationProviderApi.
+
+    /**
+     * Constructor
+     *
+     * @param TAG                     allows calling class to be identified in log messages
+     * @param context                 is key
+     * @param locationHelperInterface used to implement callback methods
+     */
     public LocationHelper(String TAG, Context context, Interface locationHelperInterface) {
         this.TAG = TAG;
         mContext = context;
@@ -171,6 +177,24 @@ public class LocationHelper implements ConnectionCallbacks, OnConnectionFailedLi
      */
     public void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+
+    /**
+     * Getter and setter methods for location
+     */
+    public Location getCurrentLocation() {
+        return mCurrentLocation;
+    }
+
+    public void setCurrentLocation(Location location) {
+        this.mCurrentLocation = location;
+    }
+
+    /**
+     * Getter for mGoogleApiClient
+     */
+    public GoogleApiClient getGoogleApiClient() {
+        return mGoogleApiClient;
     }
 
     public interface Interface {

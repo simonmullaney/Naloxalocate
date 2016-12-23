@@ -1,22 +1,28 @@
 <resources>
     <string name="app_name">Naloxalocate</string>
-    <string name="startMsg">Send a message to an emergency contact after 10 mintues in case of overdose.</string>
-    <string name="start_btn_msg">Start a Timer</string>
-    <string name="find_msg">Find opioid overdose reversal drug near you.</string>
-    <string name="find_btn_msg">Find Naloxone</string>
-    <string name="register_msg">Register as a Naloxone provider.</string>
-    <string name="provide_btn_msg">Provide Naloxone</string>
-    <string name="select_contact">Contact number</string>
-    <string name="emergency_contact_name">Emergency contact name</string>
-    <string name="emergency_message">Emergency message</string>
-    <string name="save_emergency_details">Save for next time</string>
-    <string name="start_timer">Begin timer</string>
-    <string name="select_time">Select time</string>
-    <string name="Remaining_time">Remaining time: </string>
-    <string name="Remaining_time_val">Remaining time value: </string>
-    <string name="StopAlarm">Stop Alarm: </string>
-    <string name="gps_off_text">Turn Off GPS Tracking</string>
-    <string name="gps_on_text">Turn On GPS Tracking</string>
+    <!--Main Blurb-->
+    <string name="timer_blurb">Send a text message to an emergency contact after several minutes in case of overdose.</string>
+    <string name="find_blurb">Find opioid overdose reversal drug near you.</string>
+    <string name="register_blurb">Register as a Naloxone provider.</string>
+    <!--Main Buttons-->
+    <string name="timer_btn_text">Start a Timer</string>
+    <string name="find_btn_text">Find Naloxone</string>
+    <string name="provide_btn_text">Provide Naloxone</string>
+    <!--Timer Layout-->
+    <string name="contact_number_label">Contact Number</string>
+    <string name="contact_name_label">Emergency Contact Name</string>
+    <string name="sms_message_label">Emergency Message</string>
+    <string name="time_duration_label">Set Timer Duration</string>
+    <string name="save_timer_details_label">Save for next time</string>
+    <string name="start_timer_btn_text"> Start Timer </string>
+    <!--Countdown Layout-->
+    <string name="stop_alarm_btn_text">Stop Alarm</string>
+    <string name="sms_sent_to_name">"SMS Sent to "</string>
+    <string name="countdown_finished_text">00:00</string>
+    <!--Find Activity-->
     <string name="find_empty_list_text">No Nearby Carriers</string>
+    <!--Provide Activity-->
+    <string name="gps_off_btn_text">Turn Off GPS Tracking</string>
+    <string name="gps_on_btn_text">Turn On GPS Tracking</string>
 
 </resources>

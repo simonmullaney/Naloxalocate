@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:backgroundTint="@android:color/background_dark"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -13,71 +11,119 @@
     tools:context="com.apaulling.naloxalocate.activities.MainActivity">
 
     <TextView
+        android:id="@+id/text_1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:text="Send a message to an emergency contact in the case of an overdose "
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-        android:textSize="15dp"/>
+        android:text="@string/timer_blurb"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="34dp"
-        android:background="@android:color/holo_green_light"
-        android:padding="15dp"
-        android:text="Provide Naloxone" />
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView6"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:backgroundTint="@android:color/holo_blue_light"
-        android:padding="15dp"
-        android:text="Start a Timer" />
-
-    <TextView
-        android:id="@+id/textView3"
+    <LinearLayout
+        android:id="@+id/btn_timer_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/button"
-        android:layout_marginTop="65dp"
-        android:text="Find opioid overdose reversal drug near you"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-        android:textSize="15dp" />
+        android:layout_below="@id/text_1"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:weightSum="3">
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:background="@android:color/holo_orange_dark"
-        android:padding="15dp"
-        android:text="Find Naloxone" />
+        <Button
+            android:id="@+id/btn_timer_activity"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:text="@string/timer_btn_text"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/divider_1"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/btn_timer_row"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dip"
+            android:background="#a6a6a6" />
+
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/text_2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/button3"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="44dp"
-        android:backgroundTint="@android:color/background_dark"
-        android:text="Register as a naloxone provider"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-        android:textSize="15dp" />
+        android:layout_below="@id/divider_1"
+        android:text="@string/find_blurb"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <LinearLayout
+        android:id="@+id/btn_find_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_2"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <Button
+            android:id="@+id/btn_find_activity"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:backgroundTint="@android:color/holo_orange_dark"
+            android:text="@string/find_btn_text"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/divider_2"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/btn_find_row"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dip"
+            android:background="#a6a6a6" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/text_view_provide"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/divider_2"
+        android:text="@string/register_blurb"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_view_provide"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <Button
+            android:id="@+id/btn_provide_activity"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:backgroundTint="@android:color/holo_green_dark"
+            android:text="@string/provide_btn_text"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
 
 </RelativeLayout>
-

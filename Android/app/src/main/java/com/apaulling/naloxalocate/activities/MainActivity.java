@@ -1,5 +1,6 @@
 package com.apaulling.naloxalocate.activities;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -17,7 +18,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.apaulling.naloxalocate.R;
-import com.apaulling.naloxalocate.util.Deodorant;
+import com.apaulling.naloxalocate.util.Consts;
+import com.apaulling.naloxalocate.util.ErrorHandlerHelper;
 import com.apaulling.naloxalocate.util.RequestSingleton;
 
 import org.json.JSONException;
@@ -27,18 +29,19 @@ public class MainActivity extends AppCompatActivity {
 
     protected static final String TAG = "MainActivity";
     // UI elements
-    Button btnTimerActivity;
-    Button btnFindActivity;
-    Button btnProvideActivity;
-    private Deodorant mSmellsHelper; // helps with creating error dialogs
+    private Button btnTimerActivity;
+    private Button btnFindActivity;
+    private Button btnProvideActivity;
+    // Other member vars
+    private ErrorHandlerHelper mErrorHandlerHelper; // helps with creating error dialogs
     private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.other_activity_main);
+        setContentView(R.layout.activity_main);
 
-        mSmellsHelper = new Deodorant(this);
+        mErrorHandlerHelper = new ErrorHandlerHelper(this); // helps with error handling
 
         btnTimerActivity = (Button) findViewById(R.id.btn_timer_activity);
         btnFindActivity = (Button) findViewById(R.id.btn_find_activity);
@@ -47,23 +50,34 @@ public class MainActivity extends AppCompatActivity {
         /**
          * Btn click listeners
          */
+        // Start Timer Activity
         btnTimerActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.this.startActivity(new Intent(MainActivity.this, TimerActivity.class));
+                // Check for location permissions
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                    // Ask for SMS permission
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{android.Manifest.permission.SEND_SMS},
+                            Consts.PERMISSION_SMS_TIMER_REQ_CODE);
+                } else {
+                    // Location permission already granted, start activity
+                    MainActivity.this.startActivity(new Intent(MainActivity.this, TimerActivity.class));
+                }
             }
         });
 
+        // Start Find Activity
         btnFindActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Check for location permissions
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                         ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
+                    // Ask for location permission
                     ActivityCompat.requestPermissions(MainActivity.this,
                             new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION},
-                            Deodorant.PERMISSION_LOCATION_FIND_REQ_CODE);
+                            Consts.PERMISSION_LOCATION_FIND_REQ_CODE);
                 } else {
                     // Location permission already granted, start activity
                     MainActivity.this.startActivity(new Intent(MainActivity.this, FindActivity.class));
@@ -71,23 +85,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Start Provide Activity
         btnProvideActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                         ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
+                    // Ask for location permission
                     ActivityCompat.requestPermissions(MainActivity.this,
                             new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION},
-                            Deodorant.PERMISSION_LOCATION_PROVIDE_REQ_CODE);
+                            Consts.PERMISSION_LOCATION_PROVIDE_REQ_CODE);
                 } else {
-                    // Check for a device id
+                    // Check for a user id
                     prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                    int user_id = prefs.getInt(Deodorant.USER_ID_PERF_KEY, -1);
+                    int user_id = prefs.getInt(Consts.USER_ID_PERF_KEY, -1);
                     if (user_id == -1) {
                         // New user. Must get an id for the device to identify it with the server
                         getNewDeviceId();
                     } else {
+                        // Have a user id and location permission. Start activity
                         MainActivity.this.startActivity(new Intent(MainActivity.this, ProvideActivity.class));
                     }
                 }
@@ -112,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                             int user_id = response.getInt("user_id");
 
                             // Store it for next time
-                            prefs.edit().putInt(Deodorant.USER_ID_PERF_KEY, user_id).apply();
+                            prefs.edit().putInt(Consts.USER_ID_PERF_KEY, user_id).apply();
 
                             // Start the activity
                             MainActivity.this.startActivity(new Intent(MainActivity.this, ProvideActivity.class));
@@ -125,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        mSmellsHelper.handleNetError(error);
+                        mErrorHandlerHelper.handleNetError(error);
                     }
                 });
 
@@ -139,14 +155,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
-            case Deodorant.PERMISSION_LOCATION_FIND_REQ_CODE:
+            case Consts.PERMISSION_SMS_TIMER_REQ_CODE:
                 // If request is cancelled, the result arrays are empty.
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    MainActivity.this.startActivity(new Intent(MainActivity.this, TimerActivity.class));
+                }
+                break;
+            case Consts.PERMISSION_LOCATION_FIND_REQ_CODE:
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     MainActivity.this.startActivity(new Intent(MainActivity.this, FindActivity.class));
                 }
                 break;
-            case Deodorant.PERMISSION_LOCATION_PROVIDE_REQ_CODE:
-                // If request is cancelled, the result arrays are empty.
+            case Consts.PERMISSION_LOCATION_PROVIDE_REQ_CODE:
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     // Call onClick callback again
                     btnProvideActivity.callOnClick();
@@ -154,4 +174,5 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
+
 }

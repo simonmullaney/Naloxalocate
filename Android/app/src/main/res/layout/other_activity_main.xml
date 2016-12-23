@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.3"
-            android:text="@string/startMsg"
+            android:text="@string/timer_blurb"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <LinearLayout
@@ -38,7 +38,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/holo_blue_light"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:text="@string/start_btn_msg"
+                android:text="@string/timer_btn_text"
                 android:textColor="@android:color/white" />
 
         </LinearLayout>
@@ -69,7 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.3"
-            android:text="@string/find_msg"
+            android:text="@string/find_blurb"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <LinearLayout
@@ -86,7 +86,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/holo_orange_dark"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:text="@string/find_btn_msg"
+                android:text="@string/find_btn_text"
                 android:textColor="@android:color/white" />
 
         </LinearLayout>
@@ -118,7 +118,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.3"
-            android:text="@string/register_msg"
+            android:text="@string/register_blurb"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <LinearLayout
@@ -135,7 +135,7 @@
                 android:layout_weight="1"
                 android:background="@android:color/holo_green_dark"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:text="@string/provide_btn_msg"
+                android:text="@string/provide_btn_text"
                 android:textColor="@android:color/white" />
 
         </LinearLayout>

@@ -19,7 +19,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.apaulling.naloxalocate.R;
 import com.apaulling.naloxalocate.activities.ProvideActivity;
-import com.apaulling.naloxalocate.util.Deodorant;
+import com.apaulling.naloxalocate.util.Consts;
 import com.apaulling.naloxalocate.util.LocationHelper;
 import com.apaulling.naloxalocate.util.RequestSingleton;
 import com.google.android.gms.common.api.Status;
@@ -37,7 +37,7 @@ public class LocationService extends IntentService implements LocationHelper.Int
 
     private static final String TAG = "LocationService";
 
-    Intent mIntent;
+    private Intent mIntent;
     private LocalBroadcastManager broadcaster;
     private LocationHelper mLocHelper;
 
@@ -50,7 +50,7 @@ public class LocationService extends IntentService implements LocationHelper.Int
     protected void onHandleIntent(Intent intent) {
         mIntent = intent;
         // Start location
-        mLocHelper.mGoogleApiClient.connect();
+        mLocHelper.getGoogleApiClient().connect();
     }
 
     @Override
@@ -70,7 +70,7 @@ public class LocationService extends IntentService implements LocationHelper.Int
     public void onConnected() {
         mLocHelper.getLastLocation();
         // Check if previous location is available. Wouldn't after a reboot.
-        if (mLocHelper.mCurrentLocation != null) {
+        if (mLocHelper.getCurrentLocation() != null) {
             uploadLocation();
         }
         // Wait for new location
@@ -97,7 +97,7 @@ public class LocationService extends IntentService implements LocationHelper.Int
     @Override
     public void handleNoLocationPermission() {
         Log.i(TAG, "No have permissions!");
-        createNotification("Missing Permission", "Touch to fix", Deodorant.ERROR_PERMISSION_REQ_CODE);
+        createNotification("Missing Permission", "Touch to fix", Consts.ERROR_PERMISSION_REQ_CODE);
         finishService();
     }
 
@@ -111,26 +111,32 @@ public class LocationService extends IntentService implements LocationHelper.Int
                 // Location settings are not satisfied.
                 Log.i(TAG, "Location not turned on");
                 // Prompt to turn it on
-                createNotification("Location off", "Touch to fix", Deodorant.ERROR_LOCATION_REQ_CODE);
+                createNotification("Location off", "Touch to fix", Consts.ERROR_LOCATION_REQ_CODE);
 
                 finishService();
             }
         }
     }
 
+    /**
+     * Uploads GPS coordinates associate with this user id
+     */
     private void uploadLocation() {
         // Get id to identify this device
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        int user_id = prefs.getInt(Deodorant.USER_ID_PERF_KEY, -1);
+        int user_id = prefs.getInt(Consts.USER_ID_PERF_KEY, -1);
+        if (user_id == -1) { // just in case
+            return;
+        }
 
         @SuppressLint("DefaultLocale")
         String url = String.format("http://apaulling.com/naloxalocate/api/v1.0/users/%d", user_id);
 
         // Data to be sent to the server
         HashMap<String, String> params = new HashMap<>();
-        params.put("latitude", Double.toString(mLocHelper.mCurrentLocation.getLatitude()));
-        params.put("longitude", Double.toString(mLocHelper.mCurrentLocation.getLongitude()));
-        params.put("accuracy", Double.toString(mLocHelper.mCurrentLocation.getAccuracy()));
+        params.put("latitude", Double.toString(mLocHelper.getCurrentLocation().getLatitude()));
+        params.put("longitude", Double.toString(mLocHelper.getCurrentLocation().getLongitude()));
+        params.put("accuracy", Double.toString(mLocHelper.getCurrentLocation().getAccuracy()));
         params.put("last_updated", Long.toString(System.currentTimeMillis()));
         Log.i(TAG, params.toString());
 
@@ -143,12 +149,12 @@ public class LocationService extends IntentService implements LocationHelper.Int
                         // Destroy notification is service beings to work again
                         destroyNotification();
 
-                        // Broadcast if listening
+                        // Broadcast this time so that if Provide is listening, it can update
                         sendBroadcast(System.currentTimeMillis());
 
                         // Save for next time screen is opened
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                        prefs.edit().putLong(Deodorant.LAST_UPDATE_PERF_KEY, System.currentTimeMillis()).commit();
+                        prefs.edit().putLong(Consts.LAST_UPDATE_PERF_KEY, System.currentTimeMillis()).commit();
 
                         finishService();
                     }
@@ -157,14 +163,14 @@ public class LocationService extends IntentService implements LocationHelper.Int
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         if (error instanceof NetworkError) {
-                            createNotification("Network Error", "Please enable internet access", Deodorant.ERROR_NETWORK_REQ_CODE);
+                            createNotification("Network Error", "Please enable internet access", Consts.ERROR_NETWORK_REQ_CODE);
                             finishService();
                         } else {
                             if (error.networkResponse != null && error.networkResponse.data != null) {
                                 // response.data is really a byte array
                                 error = new VolleyError(new String(error.networkResponse.data));
                             }
-                            createNotification("Network Error", error.toString(), Deodorant.ERROR_NETWORK_REQ_CODE);
+                            createNotification("Network Error", error.toString(), Consts.ERROR_NETWORK_REQ_CODE);
                         }
                     }
                 });
@@ -175,18 +181,16 @@ public class LocationService extends IntentService implements LocationHelper.Int
 
     /**
      * Tell the ProvideActivity, if it's open, last update time.
-     *
      * @param data last update time (unix timestamp) in milliseconds
      */
     public void sendBroadcast(long data) {
-        Intent intent = new Intent(Deodorant.UPDATE_UI_INTENT);
-        intent.putExtra(Deodorant.DATA_KEY_LAST_UPDATED, data);
+        Intent intent = new Intent(Consts.UPDATE_UI_INTENT_KEY);
+        intent.putExtra(Consts.DATA_KEY_LAST_UPDATED, data);
         broadcaster.sendBroadcast(intent);
     }
 
     /**
      * Create notification that when tapped will open the Provide activity
-     *
      * @param title       The type of error
      * @param content     Tell user what to do
      * @param requestCode allows provide activity to show corresponding prompt
@@ -203,13 +207,13 @@ public class LocationService extends IntentService implements LocationHelper.Int
 
         // Set tap target activity
         Intent targetIntent = new Intent(this, ProvideActivity.class);
-        targetIntent.putExtra(Deodorant.OPEN_ERROR_DIALOG_INTENT, requestCode);
+        targetIntent.putExtra(Consts.OPEN_ERROR_DIALOG_INTENT_KEY, requestCode);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
 
         // Notify
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nManager.notify(Deodorant.ERROR_NOTIFICATION_ID, builder.build());
+        nManager.notify(Consts.ERROR_NOTIFICATION_ID, builder.build());
     }
 
     /**
@@ -217,7 +221,7 @@ public class LocationService extends IntentService implements LocationHelper.Int
      */
     private void destroyNotification() {
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nManager.cancel(Deodorant.ERROR_NOTIFICATION_ID);
+        nManager.cancel(Consts.ERROR_NOTIFICATION_ID);
     }
 
     /**

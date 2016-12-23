@@ -2,58 +2,120 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
     android:orientation="vertical"
-    android:weightSum="1">
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin">
 
-    <EditText
-        android:hint="@string/select_contact"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/matdesign_text_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/emergency_contact_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/contact_name_label"
+            android:inputType="textPersonName|textCapWords"
+            android:maxLines="1" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/Contact_number_id"
-        android:layout_weight="0.1"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:orientation="horizontal">
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingTop="8dp">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/contact_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/contact_number_label"
+                android:inputType="phone"
+                android:maxLines="1" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/contacts_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="Contacts" />
+    </LinearLayout>
 
 
-    <EditText
-        android:hint="@string/emergency_contact_name"
+    <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/emergency_contact_name_id"
-        android:layout_weight="0.14"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:paddingTop="8dp">
 
-    <EditText
-        android:hint="@string/emergency_message"
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/emergency_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/sms_message_label"
+            android:imeOptions="actionDone"
+            android:inputType="textCapSentences|textAutoCorrect" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/emergency_message_id"
-        android:layout_weight="0.25"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:orientation="vertical"
+        android:padding="4dp">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:text="@string/time_duration_label"
+            android:textColor="#999"
+            android:textSize="12sp" />
+
+        <NumberPicker
+            android:id="@+id/selected_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:descendantFocusability="blocksDescendants" />
+    </LinearLayout>
 
     <CheckBox
-        android:text="@string/save_emergency_details"
+        android:id="@+id/checkbox_save"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/checkBox_id"
-        android:layout_weight="0.1"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
-    <EditText
-        android:hint="@string/select_time"
-        android:inputType="numberDecimal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/select_time"
-        android:layout_weight="0.15"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
-    <Button
-        android:text="@string/start_timer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/btnBeginTimerActivity"
-        android:layout_weight="0.1"
-        android:background="@android:color/holo_blue_light"
-        android:textColor="@android:color/white"
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:layout_marginTop="16dp"
+        android:text="@string/save_timer_details_label"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <Button
+            android:id="@+id/btn_start_timer"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:text="@string/start_timer_btn_text"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
 
 </LinearLayout>
