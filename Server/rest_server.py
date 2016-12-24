@@ -73,7 +73,7 @@ def get_users():
         # users = query_db('SELECT `randid`, `latitude`, `longitude`, `accuracy`, `last_updated`, `hit_count` FROM users WHERE last_updated>=?', [hourAgo], dict=True)
 
         # Get only required fields of users that have a last_updated time (which assumes they have coordinates too). Return result as dictionary
-        users = query_db('SELECT `randid`, `latitude`, `longitude`, FROM users WHERE last_updated > 0', dict=True)
+        users = query_db('SELECT `randid`, `latitude`, `longitude` FROM users WHERE last_updated > 0', dict=True)
 
         # Create list of nearby users = [id, distance]
         usersNearby = []
