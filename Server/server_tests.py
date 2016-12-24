@@ -5,7 +5,7 @@ import os, rest_server, unittest, tempfile, re, json
 class FlaskrTestCase(unittest.TestCase):
 
     def setUp(self):
-        # Create a new temp database every test with a random name
+        # Create a new temp database every test with a random temporary name
         self.db_fd, rest_server.app.DATABASE = tempfile.mkstemp()
         rest_server.app.config['TESTING'] = True
         rest_server.app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
@@ -16,129 +16,123 @@ class FlaskrTestCase(unittest.TestCase):
     def tearDown(self):
         os.close(self.db_fd)
         os.unlink(rest_server.app.DATABASE)
-        
-    #   test_empty_database tests for an empty database 
+
+    #   test that empty database returns empty json array, as expected by the app client
     def test_empty_database(self):
         rv = self.app.get('/api/v1.0/users')
         assert '{"users":[]}' in rv.data
-     
-    
-    #   test_get_NonValidID checks taht an error message is returned if a non valid ID is entered 
+
+
+    #   test that an error message is returned if a non valid ID is entered
     def test_get_NonValidID(self):
-        # Create user 1
-        rv = self.app.post('/api/v1.0/users')        
-        user1 = parseInt(rv.data) 
-        
-        #Put data 
+        # Create a user
+        rv = self.app.post('/api/v1.0/users')
+        user1 = parseInt(rv.data)
+
+        # Put data
         data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": 443.3, "last_updated": 1482429033525}
         self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
-        
-        #Get data with no User Id
+
+        # Get data with no user_id specific i.e. 'users/__'
         rv = self.app.get('/api/v1.0/users/')
-       
         assert '{"error":"The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again."}' in rv.data
-        
-        #Get data of User Id that doesn't exist
+
+        # Get data of user that doesn't exist
         rv = self.app.get('/api/v1.0/users/0')
-        
         assert '{"error":"User 0 doesn\'t exist"}' in rv.data
-       
-     #  test_null_values checks that error message is returned if required fields aren't passed\left blank 
+
+     #  test that error message is returned if required fields have invalid data
     def test_null_values(self):
-        # Create user 1
-        rv = self.app.post('/api/v1.0/users')        
-        user1 = parseInt(rv.data) 
-        
+        # Create a user
+        rv = self.app.post('/api/v1.0/users')
+        user1 = parseInt(rv.data)
+
         #Put latitude as 'null'
         data = {"latitude": 'null', "longitude": -6.219635, "accuracy": 443.3, "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
         assert '{"error":"Bad request"}' in rv.data
-        
+
         #Put longitude as 'null'
         data = {"latitude": 53.302543, "longitude":'null', "accuracy": 443.3, "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
         assert '{"error":"Bad request"}' in rv.data
-        
+
         #Put accuracy as 'null'
         data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": 'null', "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
         assert '{"error":"Bad request"}' in rv.data
-        
+
         #Put last update as 'null'
         data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": 443.3, "last_updated": 'null'}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
-        assert '{"error":"Bad request"}' in rv.data        
-        
-    #   test_hit_count checks that the hit_count increases after each successful PUT
+        assert '{"error":"Bad request"}' in rv.data
+
+    #   test that the hit_count increases after each successful PUT
     def test_hit_count(self):
         # Create user 1
         rv = self.app.post('/api/v1.0/users')
-        user1 = parseInt(rv.data)        
-        
-        # Put data 1st time & Check Hit_Count increased 
+        user1 = parseInt(rv.data)
+
+        # Put data 1st time & Check Hit_Count increased
         data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": 400.0, "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
-        assert '{"user":[['+user1+',53.302543,-6.219635,400.0,1482429033525,1]]}' in rv.data  
-      
+        assert '{"user":[['+user1+',53.302543,-6.219635,400.0,1482429033525,1]]}' in rv.data
+
         # Put data 2nd time & Check Hit_Count increased again
         data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": 500.0, "last_updated": 1482429033550}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
-        assert '{"user":[['+user1+',53.302543,-6.219635,500.0,1482429033550,2]]}' in rv.data        
-        
-        # Put fails 
+        assert '{"user":[['+user1+',53.302543,-6.219635,500.0,1482429033550,2]]}' in rv.data
+
+        # Put fails
         data = {"latitude": 'null', "longitude": -6.219635, "accuracy": 500.0, "last_updated": 1482429033550}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
         assert '{"error":"Bad request"}' in rv.data
 
-        # Put data 3rd time & Check Hit_Count increased again to 3 and not 4 
+        # Put data 3rd time & Check Hit_Count increased again to 3 and not 4
         data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": 400.0, "last_updated": 1482429033570}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
-        assert '{"user":[['+user1+',53.302543,-6.219635,400.0,1482429033570,3]]}' in rv.data                        
+        assert '{"user":[['+user1+',53.302543,-6.219635,400.0,1482429033570,3]]}' in rv.data
 
-        
-        
-    # test_data_type checks what happens when different data types are given for each member variable   
+
+
+    # test what happens when different data types are given for each member variable
     def test_data_type(self):
-        # Create user 1
+        # Create a user
         rv = self.app.post('/api/v1.0/users')
         user1 = parseInt(rv.data)
-        
+
         # Put latitude as integer
         data = {"latitude": 53, "longitude": -6.219635, "accuracy": 443.3, "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
-        assert '{"user":[['+user1+',53.0,-6.219635,443.3,1482429033525,1]]}' in rv.data 
-        
-        #Put latitude as string
+        assert '{"user":[['+user1+',53.0,-6.219635,443.3,1482429033525,1]]}' in rv.data
+
+        # Put latitude as string
         data = {"latitude": "TEST", "longitude": -6.219635, "accuracy": 443.3, "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
         assert '{"error":"Bad request"}' in rv.data
-        
-        #Put longitude as string
+
+        # Put longitude as string
         data = {"latitude": 53.302543, "longitude":"TEST", "accuracy": 443.3, "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
         assert '{"error":"Bad request"}' in rv.data
-        
-        #Put accuracy as string
+
+        # Put accuracy as string
         data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": "TEST", "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
         assert '{"error":"Bad request"}' in rv.data
-        
-        #Put last update as string
+
+        # Put last_updated as string
         data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": 443.3, "last_updated": "TEST"}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
         assert '{"error":"Bad request"}' in rv.data
-        
-        #Put latitude as Numbered string
+
+        # Put latitude as Numbered string
         data = {"latitude": "53.302543", "longitude": -6.219635, "accuracy": 443.3, "last_updated": 1482429033525}
         rv = self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
-        assert '{"user":[['+user1+',53.302543,-6.219635,443.3,1482429033525,2]]}' in rv.data 
-        
-        #Continue for all other required values (Note for each succesful put to increase hit_counter
-        
+        assert '{"user":[['+user1+',53.302543,-6.219635,443.3,1482429033525,2]]}' in rv.data
 
-        
 
-    # Function starting with test is a test
+    # test basic api functions such as post, get multiple users, delete
     def test_post_get_delete_users(self):
         # Create user 1
         rv = self.app.post('/api/v1.0/users')
@@ -177,8 +171,7 @@ class FlaskrTestCase(unittest.TestCase):
         # Get all users. Result should be empty
         rv = self.app.get('/api/v1.0/users')
         assert '{"users":[]}' in rv.data
-        
-response404 = b'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">\n<title>404 Not Found</title>\n<h1>Not Found</h1>\n<p>The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again.</p>'
+
 
 def parseInt(str):
     ints = re.findall(r'\d+', str)

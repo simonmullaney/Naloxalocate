@@ -7,7 +7,7 @@
 # $ python rest-server.py
 #
 ###############################################################################
-# Deploying flask
+# Deploying flask resources
 # http://flask.pocoo.org/docs/0.11/deploying/mod_wsgi/
 # http://www.datasciencebytes.com/bytes/2015/02/24/running-a-flask-app-on-aws-ec2/
 # https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps
@@ -26,16 +26,18 @@ app.config['DEBUG'] = True
 
 ###############################################################################
 #
-# Helper things
+# Helper functions/variables
 #
 ###############################################################################
 
+# Used to parse data from PUT method. Returns error: bad data when incorrectly formatted.
 putParser = reqparse.RequestParser()
 putParser.add_argument('latitude', type=float, required=True, help='latitude required, type float')
 putParser.add_argument('longitude', type=float, required=True, help='longitude required, type float')
 putParser.add_argument('accuracy', type=float, required=True, help='accuracy required, type float')
 putParser.add_argument('last_updated', type=long, required=True, help='last_updated required, type long')
 
+# Used to parse data from GET method
 getParser = reqparse.RequestParser()
 getParser.add_argument('latitude', type=float, required=True, help='latitude required, type float')
 getParser.add_argument('longitude', type=float, required=True, help='longitude required, type float')
@@ -70,12 +72,12 @@ def get_users():
         # hourAgo = time.time() - 3600
         # users = query_db('SELECT `randid`, `latitude`, `longitude`, `accuracy`, `last_updated`, `hit_count` FROM users WHERE last_updated>=?', [hourAgo], dict=True)
 
-        # Get any users at all, for debugging...
-        users = query_db('SELECT `randid`, `latitude`, `longitude`, `accuracy`, `last_updated`, `hit_count` FROM users WHERE last_updated>0', dict=True)
+        # Get only required fields of users that have a last_updated time (which assumes they have coordinates too). Return result as dictionary
+        users = query_db('SELECT `randid`, `latitude`, `longitude`, FROM users WHERE last_updated > 0', dict=True)
 
-        # Get users nearby
+        # Create list of nearby users = [id, distance]
         usersNearby = []
-        threshold = 50 # radius in km
+        threshold = 50 # radius in km. IGNORED for demonstration purposes
         for user in users:
             dist = haversine(thisLat, thisLong, user['latitude'], user['longitude'])
             # if dist < threshold:
@@ -85,6 +87,7 @@ def get_users():
         usersNearby = sorted(usersNearby, key=itemgetter(1))
         return jsonify(users=usersNearby)
     else:
+        # Return all users in db with all columns except the primary key id. Non-sequential randid is used instead
         return jsonify(users=query_db('SELECT `randid`, `latitude`, `longitude`, `accuracy`, `last_updated`, `hit_count` FROM users'))
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['GET'])
@@ -105,7 +108,7 @@ def create_user():
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
-    user = get_user_if_exists(user_id)
+    get_user_if_exists(user_id)
     # Validate request data
     args = putParser.parse_args()
     # Update user
@@ -117,8 +120,7 @@ def update_user(user_id):
 
 @app.route('/api/v1.0/users/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    user = get_user_if_exists(user_id)
-
+    get_user_if_exists(user_id)
     query_db('DELETE FROM users WHERE randid=?', [user_id])
     return '', 204 # Indicates success but nothing is in the response body, often used for DELETE and PUT operations
 
@@ -148,11 +150,7 @@ def not_found(error):
 ###############################################################################
 # http://flask.pocoo.org/docs/0.11/patterns/sqlite3/
 
-# DB Structure
-# Users table
-#   id (device id)
-#   location
-#   update time
+# DB Structure can be found in schema.sql
 
 DATABASE = os.path.join(app.root_path, 'database.sqlite')
 
@@ -172,6 +170,7 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
+# Provides cleaner interface to database requests
 def query_db(query, args=(), one=False, dict=False, getLastId=False):
     db = get_db()
     if dict: # Return a dictionary
@@ -187,7 +186,7 @@ def query_db(query, args=(), one=False, dict=False, getLastId=False):
 
 ###############################################################################
 #
-# For Testing
+# Methods used from test script
 #
 ###############################################################################
 # https://github.com/pallets/flask/blob/master/examples/flaskr/flaskr/flaskr.py
