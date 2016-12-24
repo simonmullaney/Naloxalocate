@@ -7,40 +7,47 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Created by psdco on 22/12/2016.
+ * Tests the constructor, getters, and setters of the NearbyUser class
  */
 public class NearbyUserTest {
 
+    private static final double tolerance = 0.01;
+
     NearbyUser userToTest;
+    private int initialId;
+    private double initialDistance;
 
     @Before
     public void setUp() throws Exception {
-        userToTest = new NearbyUser(0, 0);
+        initialId = 10;
+        initialDistance = 155.22;
+        userToTest = new NearbyUser(initialId, initialDistance);
     }
 
     @Test
     public void getId() throws Exception {
         int id = userToTest.getId();
-        assertEquals(0, id);
+        assertEquals(initialId, id);
     }
 
     @Test
     public void setId() throws Exception {
-        int expected = 1;
-        userToTest.setId(expected);
-        assertEquals(expected, userToTest.getId());
+        int expectedId = 1;
+        userToTest.setId(expectedId);
+        assertEquals(expectedId, userToTest.getId());
     }
 
     @Test
     public void getDistance() throws Exception {
-        double dist = userToTest.getDistance();
-        assertEquals(0, dist, 0.1);
+        double expectedDist = userToTest.getDistance();
+        assertEquals(initialDistance, expectedDist, tolerance);
     }
 
     @Test
     public void setDistance() throws Exception {
         double expected = 1.01;
         userToTest.setDistance(expected);
-        assertEquals(expected, userToTest.getId(), 0.1);
+        assertEquals(expected, userToTest.getDistance(), tolerance);
     }
 
 }

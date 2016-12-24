@@ -59,7 +59,7 @@ public class CountdownActivity extends AppCompatActivity {
         });
 
         // Get the timer duration in minutes to convert to milliseconds
-        int timerDurationMins = getIntent().getIntExtra(Consts.TIMER_DURATION_MINS_PERF_KEY, Consts.TIME_PICKER_INTERVAL_MINS);
+        int timerDurationMins = getIntent().getIntExtra(Consts.TIMER_DURATION_MINS_INTENT_KEY, Consts.TIME_PICKER_INTERVAL_MINS);
         int timerDurationMs = timerDurationMins * 1000 * 60;
 
         // Create countdown objects

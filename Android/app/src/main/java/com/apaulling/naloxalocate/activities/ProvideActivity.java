@@ -93,7 +93,7 @@ public class ProvideActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // When starting alarm, make sure to enable location
-                if (!locationServiceAlarmSet && isLocationEnabled()) {
+                if (!locationServiceAlarmSet && !isLocationEnabled()) {
                     mErrorHandlerHelper.createLocationWarningDialog();
                 } else {
                     toggleAlarm();

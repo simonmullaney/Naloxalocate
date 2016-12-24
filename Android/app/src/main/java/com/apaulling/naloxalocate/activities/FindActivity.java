@@ -64,34 +64,32 @@ public class FindActivity extends FragmentActivity implements LocationHelper.Int
     // Keys for storing activity state in the Bundle.
     private final static String LOCATION_KEY = "location-key";
     private final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
-    private static final int DEFAULT_ZOOM = 20;
-    private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
-    Snackbar snackbar = null; // shows updates are disabled
-    /**
-     * Updates my location text and get users if location is available
-     */
-    boolean mapSet = false;
+    private final static int DEFAULT_ZOOM = 20;
+
     // Instances of helper functions
     private ErrorHandlerHelper mErrorHandlerHelper; // helps with creating error dialogs
     private LocationHelper mLocHelper; // helps with location
-    // UI Labels
+
+    // UI Elements
     private CoordinatorLayout coordinatorLayout;
     private TextView mLatitudeText;
     private TextView mLongitudeText;
     private TextView mLastUpdateTimeText;
     private TextView listEmptyText;
+    private Snackbar snackbar; // to show if updates are enabled
+
     // Time when the location was updated represented as a String.
     private String mLastUpdateTime = "";
     // Prevent dialog showing twice is both internet and gps are off
     private boolean netErrorShowing = false;
+
     // Google Maps Map
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
 
-
-    /**
-     * LocationHelper Interface methods
-     */
+    //
+    private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
+    boolean mapSet = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -142,6 +140,10 @@ public class FindActivity extends FragmentActivity implements LocationHelper.Int
         }
     }
 
+
+    /**
+     * LocationHelper Interface methods
+     */
     /**
      * Runs when a GoogleApiClient object successfully connects.
      */
@@ -207,6 +209,9 @@ public class FindActivity extends FragmentActivity implements LocationHelper.Int
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Consts.PERMISSION_LOCATION_START_REQ_CODE);
     }
 
+    /**
+     * Updates my location text and get users if location is available
+     */
     private void updateUIAndGetNearbyUsers() {
         if (mLocHelper.getCurrentLocation() == null) {
             updateUIWaiting();

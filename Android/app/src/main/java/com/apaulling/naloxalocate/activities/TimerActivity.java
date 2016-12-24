@@ -67,7 +67,7 @@ public class TimerActivity extends AppCompatActivity {
             contactNameEditText.setText(prefs.getString(Consts.CONTACT_NAME_PERF_KEY, ""));
             contactNumberEditText.setText(prefs.getString(Consts.CONTACT_NUMBER_PERF_KEY, ""));
             smsMessageEditText.setText(prefs.getString(Consts.SMS_MESSAGE_PERF_KEY, ""));
-            minuteNumberPicker.setValue(prefs.getInt(Consts.TIMER_DURATION_MINS_PERF_KEY, Consts.TIME_PICKER_INTERVAL_MINS));
+            minuteNumberPicker.setValue(prefs.getInt(Consts.TIMER_DURATION_INEDX_PERF_KEY, Consts.TIME_PICKER_INTERVAL_MINS));
             saveTimerDetailsCheckBox.setChecked(true);
         }
 
@@ -98,7 +98,9 @@ public class TimerActivity extends AppCompatActivity {
                 String contactNameStr = contactNameEditText.getText().toString().trim();
                 String contactNumberStr = contactNumberEditText.getText().toString().trim();
                 String emergencyMessageStr = smsMessageEditText.getText().toString().trim();
-                int timerDurationMins = minuteNumberPicker.getValue();
+                int timerDurationIndex = minuteNumberPicker.getValue();
+                // Convert minute number picker index to minutes. Only index is stored in perfs
+                int timerDurationMins = (timerDurationIndex+1) * Consts.TIME_PICKER_INTERVAL_MINS;
 
                 // Save or delete prefs depending on checkbox
                 SharedPreferences.Editor loginPrefsEditor = prefs.edit();
@@ -106,7 +108,7 @@ public class TimerActivity extends AppCompatActivity {
                     loginPrefsEditor.putString(Consts.CONTACT_NAME_PERF_KEY, contactNameStr);
                     loginPrefsEditor.putString(Consts.CONTACT_NUMBER_PERF_KEY, contactNumberStr);
                     loginPrefsEditor.putString(Consts.SMS_MESSAGE_PERF_KEY, emergencyMessageStr);
-                    loginPrefsEditor.putInt(Consts.TIMER_DURATION_MINS_PERF_KEY, timerDurationMins);
+                    loginPrefsEditor.putInt(Consts.TIMER_DURATION_INEDX_PERF_KEY, timerDurationIndex);
                     loginPrefsEditor.putBoolean(Consts.SAVE_DETAILS_PERF_KEY, true);
                 } else {
                     loginPrefsEditor.clear();
@@ -115,7 +117,7 @@ public class TimerActivity extends AppCompatActivity {
 
                 // Pass relevant input to the countdown activity
                 Intent i = new Intent(getApplicationContext(), CountdownActivity.class);
-                i.putExtra(Consts.TIMER_DURATION_MINS_PERF_KEY, timerDurationMins);
+                i.putExtra(Consts.TIMER_DURATION_MINS_INTENT_KEY, timerDurationMins);
                 i.putExtra(Consts.CONTACT_NUMBER_INTENT_KEY, contactNumberStr);
                 i.putExtra(Consts.SMS_MESSAGE_INTENT_KEY, emergencyMessageStr);
                 i.putExtra(Consts.CONTACT_NAME_INTENT_KEY, contactNameStr);
