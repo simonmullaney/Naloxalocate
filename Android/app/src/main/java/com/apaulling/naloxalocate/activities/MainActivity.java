@@ -98,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     // Check for a user id
                     prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                    int user_id = prefs.getInt(Consts.USER_ID_PERF_KEY, -1);
-                    if (user_id == -1) {
+                    int user_id = prefs.getInt(Consts.USER_ID_PERF_KEY, Consts.USER_ID_DEFAULT);
+                    if (user_id == Consts.USER_ID_DEFAULT) {
                         // New user. Must get an id for the device to identify it with the server
                         getNewDeviceId();
                     } else {

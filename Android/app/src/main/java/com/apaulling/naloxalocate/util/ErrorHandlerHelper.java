@@ -83,8 +83,8 @@ public class ErrorHandlerHelper {
      */
     public void createLocationWarningDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle("Unable to get location");
-        builder.setMessage("You need a network connection to use this application. Please turn on mobile network or Wi-Fi in Settings.");
+        builder.setTitle("Can not get location");
+        builder.setMessage("You need to enable location services to use this application. Please turn on GPS in Settings.");
         builder.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {

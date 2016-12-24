@@ -124,8 +124,8 @@ public class LocationService extends IntentService implements LocationHelper.Int
     private void uploadLocation() {
         // Get id to identify this device
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        int user_id = prefs.getInt(Consts.USER_ID_PERF_KEY, -1);
-        if (user_id == -1) { // just in case
+        int user_id = prefs.getInt(Consts.USER_ID_PERF_KEY, Consts.USER_ID_DEFAULT);
+        if (user_id == Consts.USER_ID_DEFAULT) { // just in case
             return;
         }
 

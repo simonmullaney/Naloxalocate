@@ -71,8 +71,8 @@ public class ProvideActivity extends AppCompatActivity {
         updateGPSStatusText(lastUpdated);
 
         // Update device ID field
-        user_id = prefs.getInt(Consts.USER_ID_PERF_KEY, -1);
-        if (user_id == -1) { // just in case
+        user_id = prefs.getInt(Consts.USER_ID_PERF_KEY, Consts.USER_ID_DEFAULT);
+        if (user_id == Consts.USER_ID_DEFAULT) { // just in case
             Toast.makeText(this, "Something went wrong with your id. Try again", Toast.LENGTH_SHORT).show();
             finish();
         }

@@ -75,10 +75,6 @@ class FlaskrTestCase(unittest.TestCase):
         rv = self.app.post('/api/v1.0/users')
         user1 = parseInt(rv.data)
 
-        # Put data
-        data = {"latitude": 53.302543, "longitude": -6.219635, "accuracy": 443.3, "last_updated": 1482429033525}
-        self.app.put('/api/v1.0/users/'+user1, data=json.dumps(data), content_type='application/json')
-
         # Get data with no user_id specific i.e. 'users/__'
         rv = self.app.get('/api/v1.0/users/')
         assert '{"error":"The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again."}' in rv.data

@@ -6,10 +6,11 @@ package com.apaulling.naloxalocate.util;
 
 public class Consts {
 
-    // MainActivity
+    // Main Activity
     public static final int PERMISSION_LOCATION_FIND_REQ_CODE = 11;
     public static final int PERMISSION_LOCATION_PROVIDE_REQ_CODE = 22;
     public static final String USER_ID_PERF_KEY = "user_id";
+    public static final int USER_ID_DEFAULT = 0; // This id is never assigned by the server
 
     // Timer Activity
     public static final int PICK_CONTACT_REQ_CODE = 12017;
@@ -30,12 +31,12 @@ public class Consts {
 
     // Find Activity Request Codes
     public static final int PERMISSION_LOCATION_START_REQ_CODE = 111;
-
     public static final int SETTINGS_LOCATION_ENABLE_REQ_CODE = 222;
+
     // Provide Activity
     public static final int LOCATION_SERVICE_INTENT_REQ_CODE = 1111;
-
     public static final int LOCATION_SERVICE_REPEAT_TIME_MS = 1000 * 60; // minimum is 60s
+
     // Location Service
     public static final int ERROR_PERMISSION_REQ_CODE = 333;
     public static final int ERROR_LOCATION_REQ_CODE = 444;
@@ -43,10 +44,10 @@ public class Consts {
     public static final String OPEN_ERROR_DIALOG_INTENT_KEY = "open-dialog-error-key";
     public static final String DATA_KEY_LAST_UPDATED = "update-ui-broadcast-key";
     public static final String UPDATE_UI_INTENT_KEY = "thunder-birds-are-something";
-
     public static final String LAST_UPDATE_PERF_KEY = "keys-open-doors";
+
     // Notification IDs
     public static final int ERROR_NOTIFICATION_ID = 12345;
-
     public static final int SERVICE_ON_NOTIFICATION_ID = 43232;
+
 }

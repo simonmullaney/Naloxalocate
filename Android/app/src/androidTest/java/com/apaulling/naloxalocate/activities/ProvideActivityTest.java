@@ -54,8 +54,8 @@ public class ProvideActivityTest {
         onView(withId(R.id.btn_provide_activity)).perform(click());
         SystemClock.sleep(1000);
 
-        // Check that device id is not -1
-        onView(withId(R.id.device_id)).check(matches(not(withText("-1"))));
+        // Check that device id is not 0
+        onView(withId(R.id.device_id)).check(matches(not(withText("0"))));
 
         // Check that GPS has never been uploaded
         onView(withId(R.id.gps_status)).check(matches(withText("Never uploaded")));
