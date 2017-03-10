@@ -1,0 +1,37 @@
+<application>
+  <component name="RunnerLayoutSettings">
+    <runner id="Android">
+      <ViewImpl>
+        <option name="ID" value="Android Logcat" />
+        <option name="minimizedInGrid" value="false" />
+        <option name="placeInGrid" value="center" />
+        <option name="tabIndex" value="0" />
+        <option name="window" value="0" />
+      </ViewImpl>
+      <ViewImpl>
+        <option name="ID" value="Monitors" />
+        <option name="minimizedInGrid" value="false" />
+        <option name="placeInGrid" value="bottom" />
+        <option name="tabIndex" value="1" />
+        <option name="window" value="0" />
+      </ViewImpl>
+      <TabImpl />
+      <TabImpl>
+        <option name="defaultIndex" value="1" />
+        <option name="index" value="1" />
+      </TabImpl>
+      <General />
+    </runner>
+    <runner id="">
+      <ViewImpl>
+        <option name="ID" value="Gradle Console" />
+        <option name="minimizedInGrid" value="false" />
+        <option name="placeInGrid" value="right" />
+        <option name="tabIndex" value="0" />
+        <option name="window" value="0" />
+      </ViewImpl>
+      <TabImpl />
+      <General />
+    </runner>
+  </component>
+</application>
